@@ -1,4 +1,6 @@
-package model;
+package traversal;
+
+import model.Move;
 
 import java.util.Map;
 import java.util.List;

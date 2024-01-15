@@ -1,10 +1,12 @@
-package model;
+package traversal;
 
 import exception.CompletedTraversalException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import model.Move;
+import model.PermutationEntity;
 
 import java.util.List;
 import java.util.Stack;

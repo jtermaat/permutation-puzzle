@@ -1,4 +1,7 @@
-package model;
+package traversal;
+
+import model.Move;
+import model.PermutationEntity;
 
 import java.util.List;
 import java.util.Map;
