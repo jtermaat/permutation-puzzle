@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import model.Move;
 import model.PermutationEntity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
@@ -18,7 +20,6 @@ import java.util.stream.Collectors;
 @Builder
 public abstract class PermutationChecker implements Runnable {
     protected int[] positions;
-    protected int cubeLength;
     protected int matchesWithTargetCount;
     protected int[] targetPositions;
     protected long gameHash;
@@ -32,18 +33,28 @@ public abstract class PermutationChecker implements Runnable {
     protected int foundCycles;
     protected int depthChangeInterval;
     protected int count;
+    protected int wildcards;
 
     protected final static int MAX_CHANGES = 100;
 
 
-    public PermutationChecker(int cubeLength, int[] positions, int maxDepth) {
-        this.cubeLength = cubeLength;
+    public PermutationChecker(int[] positions, int[] targetPositions, List<Move> allowedMoves, int maxDepth, int depthChangeInterval, int wildcards) {
         this.positions = positions;
         gameHash = calculateGameHash();
         this.moveIndex = 0;
         this.maxDepth = maxDepth;
         this.moveIndexes = new Stack<>();
         this.foundCycles = 0;
+        sequencesToSave = new ArrayList<>();
+        this.targetPositions = targetPositions;
+        this.allowedMoves = allowedMoves;
+        this.matchesWithTargetCount = 0;
+        for (int i = 0;i<targetPositions.length;i++) {
+            if (targetPositions[i] == i) {
+                ++matchesWithTargetCount;
+            }
+        }
+        this.wildcards = wildcards;
     }
 
     protected void recordCountChanges(int index, int newValue) {

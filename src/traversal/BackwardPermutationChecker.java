@@ -8,8 +8,8 @@ import java.util.List;
 public class BackwardPermutationChecker extends PermutationChecker implements Runnable {
     protected Map<Long, List<Move>> foundHashes;
 
-    public BackwardPermutationChecker(int cubeLength, int[] positions, int maxDepth, Map<Long, List<Move>> foundHashes) {
-        super(cubeLength, positions, maxDepth);
+    public BackwardPermutationChecker(int[] positions, int[] targetPositions, List<Move> allowedMoves, int maxDepth, int depthChangeInterval, int wildcards, Map<Long, List<Move>> foundHashes) {
+        super(positions, targetPositions, allowedMoves, maxDepth, depthChangeInterval, wildcards);
         this.foundHashes = foundHashes;
     }
 
@@ -22,7 +22,7 @@ public class BackwardPermutationChecker extends PermutationChecker implements Ru
             return false;
         }
         foundHashes.put(this.gameHash, getInvertedMoveList());
-        super.handleSaving();
+        handleSaving();
         return superStepForward;
     }
 }
