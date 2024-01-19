@@ -19,5 +19,6 @@
     <orderEntry type="library" name="fasterxml.jackson.core" level="project" />
     <orderEntry type="library" name="fasterxml.jackson.core.databind" level="project" />
     <orderEntry type="library" name="mongodb.driver.sync" level="project" />
+    <orderEntry type="library" name="projectlombok.lombok" level="project" />
   </component>
 </module>

@@ -1,11 +1,13 @@
 package model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 @Builder
 @Data
 public class Move {
@@ -21,14 +23,18 @@ public class Move {
             this.newPositions = newPositions;
         } else {
             this.newPositions = new int[newPositions.length];
+            List<Integer> newPositionsList = Arrays.stream(newPositions)
+                    .boxed()
+                    .toList();
             for (int i = 0;i<newPositions.length;++i) {
-                this.newPositions[newPositions[i]] = i;
+                this.newPositions[i] = newPositionsList.indexOf(i);
             }
         }
         this.id = id;
         initSwaps();
     }
-    private void initSwaps() {
+
+    public void initSwaps() {
         Queue<List<Integer>> swapsQueue = new PriorityQueue<>((a, b) -> a.get(1).compareTo(b.get(1)));
         for (int i = 0;i<newPositions.length;i++) {
             if (newPositions[i] != i) {
@@ -60,8 +66,24 @@ public class Move {
         }
     }
 
+    public Move createInverted(int numIds) {
+        return new Move(this.id+numIds, "-" + this.name, this.newPositions, true);
+    }
+
     @Override
     public boolean equals(Object other) {
         return id.equals(((Move)other).getId());
+    }
+
+    @Override
+    public String toString() {
+        String returnString = ("Move " + name + ": ");
+        for (int i = 0;i<newPositions.length;i++) {
+            returnString = returnString + newPositions[i];
+            if (i < newPositions.length - 1) {
+                returnString = returnString + ",";
+            }
+        }
+        return returnString;
     }
 }
