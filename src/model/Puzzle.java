@@ -32,7 +32,6 @@ public class Puzzle {
             final Map<String, Set<Integer>> stringToIntSetMap = new HashMap<>();
             for (int i = 0; i < newInitialState.length; ++i) {
                 newInitialState[i] = i;
-//                System.out.println("Putting key " + newInitialStateStrings[i] + " in map.");
                 stringToIntSetMap.putIfAbsent(newInitialStateStrings[i], new HashSet<>());
                 stringToIntSetMap.get(newInitialStateStrings[i]).add(i);
             }
