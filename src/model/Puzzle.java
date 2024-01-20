@@ -16,7 +16,8 @@ public class Puzzle {
     private final int id;
     private final String puzzleType;
     private final int[] initialState;
-    private final int[] solutionState;
+//    private final int[] solutionState;
+    private final boolean[][] solutionState;
     private final int numWildcards;
 
     public static Puzzle getFromString(String str) {
@@ -28,17 +29,20 @@ public class Puzzle {
             final String[] newSolutionStateStrings = parts[2].split(";");
             final String[] newInitialStateStrings = parts[3].split(";");
             final int[] newInitialState = new int[newInitialStateStrings.length];
-            final Map<String, Integer> stringToIntMap = new HashMap<>();
+            final Map<String, Set<Integer>> stringToIntSetMap = new HashMap<>();
             for (int i = 0; i < newInitialState.length; ++i) {
                 newInitialState[i] = i;
 //                System.out.println("Putting key " + newInitialStateStrings[i] + " in map.");
-                stringToIntMap.put(newInitialStateStrings[i], i);
+                stringToIntSetMap.putIfAbsent(newInitialStateStrings[i], new HashSet<>());
+                stringToIntSetMap.get(newInitialStateStrings[i]).add(i);
             }
-            final int[] newSolutionState = new int[newSolutionStateStrings.length];
-            for (int i = 0; i < newSolutionState.length; ++i) {
-//                System.out.println("Looking for String: " + newSolutionStateStrings[i] + " in map.");
-                newSolutionState[i] = stringToIntMap.get(newSolutionStateStrings[i]);
+            final boolean[][] newSolutionState = new boolean[newSolutionStateStrings.length][newSolutionStateStrings.length];
+            for (int i = 0;i < newSolutionState.length;i++) {
+                for (int j = 0;j<newSolutionState[i].length;j++) {
+                    newSolutionState[i][j] = stringToIntSetMap.get(newSolutionStateStrings[i]).contains(j);
+                }
             }
+
             return Puzzle.builder()
                     .id(newId)
                     .puzzleType(newType)

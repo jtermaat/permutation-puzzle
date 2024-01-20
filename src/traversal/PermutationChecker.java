@@ -1,115 +1,121 @@
 package traversal;
 
-import exception.CompletedTraversalException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import model.Move;
 import model.PermutationEntity;
+import model.Puzzle;
+import model.PuzzleInfo;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PermutationChecker implements Runnable {
+public class PermutationChecker {
     protected int[] positions;
     protected int matchesWithTargetCount;
-    protected int[] targetPositions;
-    protected long gameHash;
-    protected Deque<Integer> moveIndexes;
-    protected int moveIndex;
+    boolean[][] targetAllowedPositions;
+//    protected Set<Integer>[] targetPositions;
+    private Move secondToLastMove;
+    protected Deque<Move> moves;
     protected List<Move> allowedMoves;
     protected int maxDepth;
     protected List<PermutationEntity> sequencesToSave;
     protected PermutationEntity closestToTarget;
     protected int closestTargetCount;
-    protected int foundCycles;
-    protected int depthChangeInterval;
     protected long count;
     protected int wildcards;
+    protected int changesCount;
+    protected List<Move> solutionFound;
 
-    protected final static int MAX_CHANGES = 100;
-    protected final static int HASH_BASE = 2;
+    protected boolean isCube;
+
+    protected final static int MAX_CHANGES = 10;
 
 
-    public PermutationChecker(int[] positions, int[] targetPositions, List<Move> allowedMoves, int maxDepth, int depthChangeInterval, int wildcards) {
+    public PermutationChecker(Puzzle puzzle, PuzzleInfo puzzleInfo, int maxDepth) {
         this.positions = new int[positions.length];
-        System.arraycopy(positions, 0, this.positions, 0, positions.length);
-        gameHash = calculateGameHash();
-        this.moveIndex = 0;
+        System.arraycopy(puzzle.getInitialState(), 0, this.positions, 0, positions.length);
         this.maxDepth = maxDepth;
-        this.depthChangeInterval = depthChangeInterval;
-        this.moveIndexes = new ConcurrentLinkedDeque<>();// ArrayDeque
-        this.foundCycles = 0;
+        this.moves = new ArrayDeque<>();
         sequencesToSave = new ArrayList<>();
-        this.targetPositions = targetPositions;
-        this.allowedMoves = allowedMoves;
+        this.targetAllowedPositions = puzzle.getSolutionState();
+        this.allowedMoves = puzzleInfo.getAllowedMoves();
         this.matchesWithTargetCount = 0;
-        for (int i = 0;i<targetPositions.length;i++) {
-            if (targetPositions[i] == i) {
+        for (int i = 0;i<positions.length;i++) {
+            if (targetAllowedPositions[i][positions[i]]) {
                 ++matchesWithTargetCount;
             }
         }
-        this.wildcards = wildcards;
+        this.wildcards = puzzle.getNumWildcards();
+        this.isCube = puzzleInfo.getPuzzleType().toUpperCase().contains("CUBE");
+    }
+
+    protected PermutationChecker duplicateEmpty() {
+        int[] positions = new int[this.positions.length];
+        System.arraycopy(this.positions, 0, positions, 0, this.positions.length);
+        return PermutationChecker.builder()
+                .positions(positions)
+                .moves(new ArrayDeque<>())
+                .sequencesToSave(new ArrayList<>())
+                .matchesWithTargetCount(this.matchesWithTargetCount)
+                .targetAllowedPositions(this.targetAllowedPositions)
+                .allowedMoves(allowedMoves)
+                .maxDepth(maxDepth)
+                .sequencesToSave(new ArrayList<>())
+                .count(0)
+                .wildcards(this.wildcards)
+                .isCube(this.isCube)
+                .build();
     }
 
     protected void recordCountChanges(int index, int newValue) {
-        if (positions[index] == targetPositions[index]) {
+        if (targetAllowedPositions[index][positions[index]] && !targetAllowedPositions[index][newValue]) {
             --matchesWithTargetCount;
-        } else if (newValue == targetPositions[index]) {
+        } else if (!targetAllowedPositions[index][positions[index]] && targetAllowedPositions[index][newValue]) {
             ++matchesWithTargetCount;
         }
-//        gameHash += (long) newValue * (int)Math.pow(HASH_BASE, index)
-//                - (long) positions[index] * (int)Math.pow(HASH_BASE, index);
-    }
-
-    protected boolean stepForward() throws ArrayIndexOutOfBoundsException {
-//        System.out.println("Tranforming move : " + allowedMoves.get(moveIndex));
-        this.transform(allowedMoves.get(moveIndex));
-        ++count;
-        moveIndexes.push(moveIndex);
-        moveIndex = 0;
-//        System.out.println("New inverted move list: " + this.getInvertedMoveList().stream()
-//                .map(s -> s.getName()).collect(Collectors.toList()));
-        return moveIndexes.size() < maxDepth;
-    }
-
-    public void performNextMove() {
-        try {
-            if (!moveIndexes.isEmpty() && allowedMoves.get(moveIndex).equals(allowedMoves.get(moveIndexes.peek()).getInverse())) {
-                ++moveIndex;
-            }
-            if (!stepForward()) {
-                this.backtrack();
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {
-            this.backtrack();
+        if (positions[index] == index) {
+            ++changesCount;
+        } else if (newValue == index) {
+            --changesCount;
         }
     }
 
-    protected void reset() {
-        this.moveIndex = 0;
-        this.foundCycles = 0;
-        this.count = 0;
-        this.sequencesToSave = null; // TODO: Save the data
+    public void performSearch() {
+        List<PermutationChecker> finishedCheckers = allowedMoves.parallelStream()
+                .map(move -> duplicateEmpty().searchWithMove(move))
+                .toList();
     }
 
-    protected void backtrack() {
-        try {
-            int lastMove = moveIndexes.pop();
-            this.transform(allowedMoves.get(lastMove).getInverse());
-            moveIndex = lastMove + 1;
-        } catch (EmptyStackException | NoSuchElementException e) {
-            throw new CompletedTraversalException("Finished this search after checking " + count + " permutations");
+    public PermutationChecker searchWithMove(Move move) {
+        if (moves.isEmpty()
+                || !(move.equals(moves.peek().getInverse())
+                    || (isCube // To prevent obvious cube cycles
+                        && move.equals(moves.peek())
+                        && (move.isInversion()
+                            || move.equals(secondToLastMove))))) {
+            this.transform(move);
+            ++count;
+            secondToLastMove = moves.peek();
+            moves.push(move);
+            handleSaving();
+            if (moves.size() < maxDepth) {
+                allowedMoves.forEach(this::searchWithMove);
+            }
+            this.transform(moves.pop().getInverse());
+            Move lastMove = moves.pop();
+            secondToLastMove = moves.peek();
+            moves.push(lastMove);
         }
+        return this;
     }
+
     public void transform(Move move) {
-//        System.out.println("Old hash: " + gameHash);
         int lastIndex = -1;
         int lastValue = -1;
         for (int[] swap : move.getSwaps()) {
@@ -126,19 +132,10 @@ public class PermutationChecker implements Runnable {
                 lastValue = temp;
             }
         }
-//        System.out.println("New hash: " + gameHash);
     }
 
     public List<Move> getMoveList() {
-        return moveIndexes.reversed().stream() // Reversed bc ArrayDeque streams like a stack
-                .map(i -> allowedMoves.get(i))
-                .collect(Collectors.toList());
-    }
-
-    public List<Move> getInvertedMoveList() {
-        return moveIndexes.stream()
-                .map(i -> allowedMoves.get(i).getInverse())
-                .collect(Collectors.toList());
+        return new ArrayList<>(moves.reversed());
     }
 
     protected void handleSaving() {
@@ -152,39 +149,23 @@ public class PermutationChecker implements Runnable {
                     .build();
             closestTargetCount = matchesWithTargetCount;
         }
+        if (changesCount <= MAX_CHANGES) {
+            int[] savePositions = new int[positions.length];
+            System.arraycopy(positions, 0, savePositions, 0, positions.length);
+            sequencesToSave.add(PermutationEntity.builder()
+                    .moves(getMoveList())
+                    .positions(savePositions)
+                    .matchesWithTargetCount(this.matchesWithTargetCount)
+                    .changesCount(this.changesCount)
+                    .build());
+        }
     }
 
-    private Long calculateGameHash() {
-        Long hash = 0L;
-        for (int i = 0;i<positions.length;++i) {
-            hash += (long) positions[i] * (int)Math.pow(HASH_BASE, i);
-        }
-        return hash;
-    }
-
-    public void printBoard() {
-        System.out.print(positions[0]);
-        for (int i = 1;i<positions.length;i++) {
-            System.out.print(","+positions[i]);
-        }
-        System.out.println();
-    }
-
-    @Override
-    public void run() {
-        try {
-        while (true) {
-//            try {
-                performNextMove();
-            }
-        }
-            catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Finished traversal at depth " + this.maxDepth);
-                this.maxDepth += depthChangeInterval;
-//                this.reset();
-//                System.out.println("Starting traversal at depth " + this.maxDepth);
-            }
+//    public void printBoard() {
+//        System.out.print(positions[0]);
+//        for (int i = 1;i<positions.length;i++) {
+//            System.out.print(","+positions[i]);
 //        }
-    }
+//        System.out.println();
+//    }
 }

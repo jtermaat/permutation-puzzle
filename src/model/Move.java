@@ -15,12 +15,14 @@ public class Move {
     final private String name;
     final private int[] newPositions;
     private List<int[]> swaps;
+    final private boolean isInversion;
     private Move inverse;
 
     public Move(int id, String name, int[] newPositions, boolean inverted) {
         this.name = name;
         if (!inverted) {
             this.newPositions = newPositions;
+            isInversion = false;
         } else {
             this.newPositions = new int[newPositions.length];
             List<Integer> newPositionsList = Arrays.stream(newPositions)
@@ -29,6 +31,7 @@ public class Move {
             for (int i = 0;i<newPositions.length;++i) {
                 this.newPositions[i] = newPositionsList.indexOf(i);
             }
+            isInversion = true;
         }
         this.id = id;
         initSwaps();
