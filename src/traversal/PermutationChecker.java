@@ -24,17 +24,15 @@ public class PermutationChecker {
     protected Deque<Move> moves;
     protected List<Move> allowedMoves;
     protected int maxDepth;
-    protected List<PermutationEntity> sequencesToSave;
+    protected List<PermutationEntity> finalSequencesToSave;
+    Queue<PermutationEntity> sequencesToSave;
     protected PermutationEntity[] closestToTarget;
     protected int[] closestTargetCount;
     protected long count;
     protected int[] wildcards;
     protected int changesCount;
     protected List<Move> solutionFound;
-
-    protected boolean isCube;
-
-    protected final static int MAX_CHANGES = 10;
+    protected int maxChanges;
 
 
     public PermutationChecker(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth) {
@@ -43,7 +41,7 @@ public class PermutationChecker {
         System.arraycopy(puzzles.get(0).getInitialState(), 0, this.positions, 0, positions.length);
         this.maxDepth = maxDepth;
         this.moves = new ArrayDeque<>();
-        sequencesToSave = new ArrayList<>();
+        sequencesToSave = new PriorityQueue<>((a,b) -> b.getChangesCount().compareTo(a.getChangesCount()));
         this.targetAllowedPositions = new boolean[numTargets][positions.length][positions.length];
         for (int i = 0;i<numTargets;i++) {
             this.targetAllowedPositions[i] = puzzles.get(i).getSolutionState();
@@ -60,7 +58,17 @@ public class PermutationChecker {
             }
             this.wildcards[t] = puzzles.get(t).getNumWildcards();
         }
-        this.isCube = puzzleInfo.getPuzzleType().toUpperCase().contains("CUBE");
+        this.maxChanges = getMaxChanges();
+    }
+
+    protected int calculateMaxChanges() {
+        int minClosestTargetCount = closestTargetCount[0];
+        for (int i = 1;i<closestTargetCount.length;++i) {
+            if (closestTargetCount[i] < minClosestTargetCount) {
+                minClosestTargetCount = closestTargetCount[i];
+            }
+        }
+        return positions.length - minClosestTargetCount;
     }
 
     protected PermutationChecker duplicateEmpty() {
@@ -69,15 +77,14 @@ public class PermutationChecker {
         return PermutationChecker.builder()
                 .positions(positions)
                 .moves(new ArrayDeque<>())
-                .sequencesToSave(new ArrayList<>())
+                .sequencesToSave(new PriorityQueue<>((a,b) -> b.getChangesCount().compareTo(a.getChangesCount())))
                 .matchesWithTargetCount(this.matchesWithTargetCount)
                 .targetAllowedPositions(this.targetAllowedPositions)
                 .allowedMoves(allowedMoves)
                 .maxDepth(maxDepth)
-                .sequencesToSave(new ArrayList<>())
                 .count(0)
                 .wildcards(this.wildcards)
-                .isCube(this.isCube)
+                .maxChanges(this.maxChanges)
                 .build();
     }
 
@@ -123,12 +130,12 @@ public class PermutationChecker {
                 .sorted()
                 .toList();
         System.out.println("Filtering " + sortedSavedEntities + " saved sequences.");
-        this.sequencesToSave = new ArrayList<>();
+        this.finalSequencesToSave = new ArrayList<>();
         PermutationEntity currentEntity = null;
         for (int i = 0;i<sortedSavedEntities.size();++i) {
             if (!sortedSavedEntities.get(i).equals(currentEntity)) {
                 if (currentEntity != null && currentEntity.getChangesCount() < (positions.length - minTargetsHit)) {
-                    sequencesToSave.add(currentEntity);
+                    finalSequencesToSave.add(currentEntity);
                 }
                 currentEntity = sortedSavedEntities.get(i);
             } else {
@@ -181,6 +188,7 @@ public class PermutationChecker {
     }
 
     protected void handleSaving() {
+        boolean gotCloserToTargets = false;
         for (int t = 0;t<numTargets;++t) {
             if (this.matchesWithTargetCount[t] > closestTargetCount[t] ||
                     (this.matchesWithTargetCount[t] == closestTargetCount[t] &&
@@ -194,16 +202,24 @@ public class PermutationChecker {
                         .matchesWithTargetCount(this.matchesWithTargetCount[t])
                         .build();
                 closestTargetCount[t] = matchesWithTargetCount[t];
+                gotCloserToTargets = true;
             }
         }
-        if (changesCount <= MAX_CHANGES) {
-            int[] savePositions = new int[positions.length];
-            System.arraycopy(positions, 0, savePositions, 0, positions.length);
-            sequencesToSave.add(PermutationEntity.builder()
-                    .moves(getMoveList())
-                    .positions(savePositions)
-                    .changesCount(this.changesCount)
-                    .build());
+        if (gotCloserToTargets) {
+            maxChanges = calculateMaxChanges();
+            while (sequencesToSave.peek().getChangesCount() > maxChanges) {
+                sequencesToSave.poll();
+            }
+        }
+        if (changesCount <= maxChanges) {
+                int[] savePositions = new int[positions.length];
+                System.arraycopy(positions, 0, savePositions, 0, positions.length);
+                sequencesToSave.offer(PermutationEntity.builder()
+                        .moves(getMoveList())
+                        .positions(savePositions)
+                        .changesCount(this.changesCount)
+                        .build());
+
         }
     }
 

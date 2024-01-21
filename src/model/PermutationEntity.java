@@ -11,7 +11,7 @@ public class PermutationEntity implements Comparable<PermutationEntity> {
     private final List<Move> moves;
     private final int[] positions;
     private final int matchesWithTargetCount;
-    private final int changesCount;
+    private final Integer changesCount;
 
     public Move toMove(int id) {
         Move move = Move.builder()
@@ -22,7 +22,16 @@ public class PermutationEntity implements Comparable<PermutationEntity> {
                 .isInversion(false)
                 .newPositions(positions)
                 .build();
+        Move inverse = new Move(id * -1,
+                moves.reversed().stream()
+                .map(Move::getName)
+                .reduce("", (a, b) -> a.concat(".").concat(b)),
+                positions, true);
+
+        inverse.initSwaps();
         move.initSwaps();
+        move.setInverse(inverse);
+        inverse.setInverse(move);
         return move;
     }
 

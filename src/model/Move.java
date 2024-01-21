@@ -17,6 +17,7 @@ public class Move {
     private List<int[]> swaps;
     final private boolean isInversion;
     private Move inverse;
+    private Integer targetMatchCount;
 
     public Move(int id, String name, int[] newPositions, boolean inverted) {
         this.name = name;
