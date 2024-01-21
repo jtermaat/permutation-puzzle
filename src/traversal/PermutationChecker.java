@@ -20,7 +20,7 @@ public class PermutationChecker {
     protected int numTargets;
     protected int[] positions;
     protected int[] matchesWithTargetCount;
-    boolean[][][] targetAllowedPositions;
+    protected boolean[][][] targetAllowedPositions;
     protected Deque<Move> moves;
     protected List<Move> allowedMoves;
     protected int maxDepth;
@@ -34,8 +34,14 @@ public class PermutationChecker {
     protected List<Move> solutionFound;
     protected int maxChanges;
 
+    protected List<Puzzle> puzzles;
+    protected PuzzleInfo puzzleInfo;
+
+
 
     public PermutationChecker(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth) {
+        this.puzzles = puzzles;
+        this.puzzleInfo = puzzleInfo;
         this.numTargets = puzzles.size();
         this.positions = new int[positions.length];
         System.arraycopy(puzzles.get(0).getInitialState(), 0, this.positions, 0, positions.length);
