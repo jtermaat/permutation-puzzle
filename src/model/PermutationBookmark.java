@@ -7,13 +7,14 @@ import java.util.List;
 
 @Data
 @Builder
-public class PermutationEntity implements Comparable<PermutationEntity> {
+public class PermutationBookmark implements Comparable<PermutationBookmark> {
+    private final int id;
     private final List<Move> moves;
     private final int[] positions;
     private final int matchesWithTargetCount;
     private final Integer changesCount;
 
-    public Move toMove(int id) {
+    public Move toMove() {
         Move move = Move.builder()
                 .id(id)
                 .name(moves.stream()
@@ -62,7 +63,7 @@ public class PermutationEntity implements Comparable<PermutationEntity> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        PermutationEntity otherPermutation = (PermutationEntity) o;
+        PermutationBookmark otherPermutation = (PermutationBookmark) o;
         for (int i = 0;i<positions.length;++i) {
             if (positions[i] != otherPermutation.getPositions()[i]) {
                 return false;
@@ -72,7 +73,7 @@ public class PermutationEntity implements Comparable<PermutationEntity> {
     }
 
     @Override
-    public int compareTo(PermutationEntity otherPermutation) {
+    public int compareTo(PermutationBookmark otherPermutation) {
         for (int i = 0;i<positions.length;++i) {
             if (positions[i] < otherPermutation.getPositions()[i]) {
                 return -1;
