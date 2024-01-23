@@ -44,6 +44,7 @@ public class PuzzleInfo {
                             .newPositions(newPositions)
                             .id(moveIdCount)
                             .build());
+                    ++moveIdCount;
                 }
                 List<Move> allowedMoves = allowed.stream()
                         .flatMap(move -> {

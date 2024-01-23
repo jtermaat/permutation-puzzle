@@ -24,8 +24,10 @@ public class Move {
         if (!inverted) {
             this.newPositions = newPositions;
             isInversion = false;
+            this.id = id;
         } else {
             this.newPositions = new int[newPositions.length];
+            this.id = id * -1;
             List<Integer> newPositionsList = Arrays.stream(newPositions)
                     .boxed()
                     .toList();
@@ -34,7 +36,6 @@ public class Move {
             }
             isInversion = true;
         }
-        this.id = id;
         initSwaps();
     }
 
@@ -76,7 +77,7 @@ public class Move {
 
     @Override
     public boolean equals(Object other) {
-        return id.equals(((Move)other).getId());
+        return other != null && getClass() == other.getClass() && id.equals(((Move)other).getId());
     }
 
     @Override

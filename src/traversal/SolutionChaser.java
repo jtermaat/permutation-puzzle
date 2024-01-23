@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class SolutionChaser extends PermutationChecker {
 
     private List<List<PermutationBookmark>> solutions;
@@ -32,7 +31,7 @@ public class SolutionChaser extends PermutationChecker {
         super(checker.getPuzzles(), checker.getPuzzleInfo(), checker.maxDepth);
         this.closestToTarget = checker.getClosestToTarget();
         this.closestTargetCount = checker.getClosestTargetCount();
-        this.allowedMoves = checker.getFinalSequencesToSave().stream()
+        this.allowedMoves = checker.getSequencesToSave().stream()
                 .map(PermutationBookmark::toMove)
                 .toList();
     }
@@ -41,16 +40,33 @@ public class SolutionChaser extends PermutationChecker {
     public void performSearch() {
         solutions = new ArrayList<>();
         for (targetNum = 0;targetNum < numTargets;++targetNum) {
+            System.out.println("Hunting for solution " + targetNum);
             System.arraycopy(closestToTarget[targetNum].getPositions(), 0, positions, 0, positions.length);
             List<PermutationBookmark> thisSolution = new ArrayList<>();
-            thisSolution.add(closestToTarget[targetNum]);
             PermutationBookmark next = closestToTarget[targetNum];
             thisSolution.add(next);
-            while (positions.length - closestToTarget[targetNum].getMatchesWithTargetCount() > wildcards[targetNum]) {
+            int newDistance = positions.length - closestToTarget[targetNum].getMatchesWithTargetCount();
+            int lastDistance = positions.length;
+            while (newDistance > wildcards[targetNum] && newDistance != lastDistance) {
+                System.out.println("Current distance from solution is " + newDistance + " out of allowed " + wildcards[targetNum]);
                 next = getNextTransitionGreedy(next);
                 thisSolution.add(next);
+                lastDistance = newDistance;
+                newDistance = positions.length - closestToTarget[targetNum].getMatchesWithTargetCount();
+                if (newDistance == lastDistance) {
+                    System.out.println("Uh oh, new distance equals last distance, so we have a problem.");
+                }
             }
-            solutions.add(thisSolution);
+            if (newDistance <= wildcards[targetNum]) {
+                System.out.println("Solution Found for target " + targetNum + "!!!");
+                solutions.add(thisSolution);
+            } else {
+                System.out.println("No solution found for target " + targetNum);
+                System.out.println("Old distance: " + lastDistance);
+                System.out.println("New distance: " + newDistance);
+                solutions.add(new ArrayList<>());
+            }
+
         }
     }
 
@@ -59,18 +75,23 @@ public class SolutionChaser extends PermutationChecker {
             BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
             for (int i = 0;i<numTargets;++i) {
                 List<PermutationBookmark> solution = solutions.get(i);
-                StringBuilder sb = new StringBuilder();
-                sb.append(puzzles.get(i).getId()).append(",");
                 List<Move> allMoves = solution.stream()
+                        .filter(Objects::nonNull)
                         .flatMap(s -> s.getMoves().stream())
                         .toList();
-                sb.append(allMoves.get(0).getName());
-                for (int j = 1;j<allMoves.size();++j) {
-                    sb.append(".").append(allMoves.get(j).getName());
+                if (!allMoves.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(puzzles.get(i).getId()).append(",");
+                    sb.append(allMoves.get(0).getName());
+                    for (int j = 1; j < allMoves.size(); ++j) {
+                        sb.append(".").append(allMoves.get(j).getName());
+                    }
+                    sb.append("\n");
+                    System.out.println("For target " + i + ", writing: " + sb.toString());
+                    writer.write(sb.toString());
                 }
-                sb.append("\n");
-                writer.write(sb.toString());
             }
+            writer.flush();
         } catch (IOException ie) {
             System.out.println("Error writing results to file " + filename);
             ie.printStackTrace();
@@ -89,12 +110,15 @@ public class SolutionChaser extends PermutationChecker {
     protected PermutationBookmark getNextTransitionGreedy(PermutationBookmark last) {
         int parallelChasersCount = 128;
         List<List<Move>> moveLists = new ArrayList<>();
-        for (int i = 1;i<allowedMoves.size();++i) {
+        for (int i = 1;i<allowedMoves.size() / parallelChasersCount;++i) {
             moveLists.add(allowedMoves.subList((i-1)*parallelChasersCount, i*parallelChasersCount));
         }
-        List<PermutationBookmark> bestTransitions = moveLists.parallelStream()
-                .map(l -> duplicate(last).getNextTransitionGreedyFromMoves(l))
+        List<PermutationBookmark> bestTransitions = moveLists.stream()
+                .map(s -> duplicate(last).getNextTransitionGreedyFromMoves(s))
                 .toList();
+        if (bestTransitions.isEmpty()) {
+            return null;
+        }
         PermutationBookmark best = bestTransitions.get(0);
         for (int i = 1;i<bestTransitions.size();i++) {
             if (bestTransitions.get(i).getMatchesWithTargetCount() > best.getMatchesWithTargetCount()) {
