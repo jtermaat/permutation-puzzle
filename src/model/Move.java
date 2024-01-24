@@ -14,7 +14,8 @@ public class Move {
     final private Integer id;
     final private String name;
     final private int[] newPositions;
-    private List<int[]> swaps;
+//    private List<int[]> swaps;
+    int[][] swaps;
     final private boolean isInversion;
     private Move inverse;
     private Integer targetMatchCount;
@@ -51,14 +52,15 @@ public class Move {
         }
         Map<Integer, List<Integer>> swapsMap = swapsQueue.stream()
                 .collect(Collectors.toMap(a -> a.get(1), a -> a));
-        swaps = new ArrayList<>();
+//        swaps = new ArrayList<>();
+        List<int[]> swapsList = new ArrayList<>();
         while(!swapsQueue.isEmpty()) {
             List<Integer> nextSwap = swapsQueue.poll();
             int swapIndex = nextSwap.get(0);
             int swapValue = nextSwap.get(1);
             boolean finished = false;
             while (swapIndex != swapValue && !finished) {
-                swaps.add(new int[]{swapIndex, swapValue});
+                swapsList.add(new int[]{swapIndex, swapValue});
                 nextSwap = swapsMap.get(swapIndex);
                 if (!swapsQueue.contains(nextSwap)) {
                     finished = true;
@@ -68,6 +70,11 @@ public class Move {
                     swapsQueue.remove(nextSwap);
                 }
             }
+        }
+        Object[] swapsObject = swapsList.toArray();
+        swaps = new int[swapsObject.length][2];
+        for (int i = 0;i<swapsObject.length;i++) {
+            swaps[i] = (int[])swapsObject[i];
         }
     }
 

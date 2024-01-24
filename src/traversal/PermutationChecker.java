@@ -11,6 +11,8 @@ import model.PuzzleInfo;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Data
 @NoArgsConstructor
@@ -21,8 +23,11 @@ public class PermutationChecker {
     protected int[] positions;
     protected int[] matchesWithTargetCount;
     protected boolean[][][] targetAllowedPositions;
-    protected Deque<Move> moves;
-    protected List<Move> allowedMoves;
+//    protected Deque<Move> moves;
+    protected Deque<Integer> moveIndexes;
+    protected int moveIndex;
+//    protected List<Move> allowedMoves;
+    protected Move[] allowedMoves;
     protected int maxDepth;
     protected List<PermutationBookmark> finalSequencesToSave;
     List<PermutationBookmark> sequencesToSave;
@@ -38,14 +43,15 @@ public class PermutationChecker {
 
 
 
-    public PermutationChecker(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth) {
+    public PermutationChecker(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth, int maxChanges) {
         this.puzzles = puzzles;
         this.puzzleInfo = puzzleInfo;
         this.numTargets = puzzles.size();
         this.positions = new int[puzzles.get(0).getInitialState().length];
         System.arraycopy(puzzles.get(0).getInitialState(), 0, this.positions, 0, positions.length);
         this.maxDepth = maxDepth;
-        this.moves = new ArrayDeque<>();
+//        this.moves = new ArrayDeque<>();
+        this.moveIndexes = new ArrayDeque<>();
         sequencesToSave = new ArrayList<>();
         this.targetAllowedPositions = new boolean[numTargets][positions.length][positions.length];
         for (int i = 0;i<numTargets;i++) {
@@ -64,7 +70,7 @@ public class PermutationChecker {
             }
             this.wildcards[t] = puzzles.get(t).getNumWildcards();
         }
-        this.maxChanges = getMaxChanges();
+        this.maxChanges = maxChanges;
     }
 
     protected int calculateMaxChanges() {
@@ -94,13 +100,13 @@ public class PermutationChecker {
     }
 
     public void performSearch() {
-        gatherDataAndRemoveDuplicates(allowedMoves.parallelStream()
-                .map(move -> new PermutationChecker(puzzles, puzzleInfo, maxDepth).searchWithMove(move))
+        gatherDataAndRemoveDuplicates(IntStream.range(0, allowedMoves.length).boxed().toList().parallelStream()
+                .map(index -> new PermutationChecker(puzzles, puzzleInfo, maxDepth, maxChanges).searchWithMove(index))
                 .toList());
     }
 
     protected void gatherDataAndRemoveDuplicates(List<PermutationChecker> finishedCheckers) {
-        int minTargetsHit = positions.length;
+//        int minTargetsHit = positions.length;
         List<PermutationBookmark[]> allClosestToTargets = finishedCheckers.stream()
                 .map(PermutationChecker::getClosestToTarget)
                 .toList();
@@ -112,9 +118,9 @@ public class PermutationChecker {
                 }
             }
         }
-        for (int i = 0;i < numTargets;++i) {
-            minTargetsHit = Math.min(this.closestToTarget[i].getMatchesWithTargetCount(), minTargetsHit);
-        }
+//        for (int i = 0;i < numTargets;++i) {
+//            minTargetsHit = Math.min(this.closestToTarget[i].getMatchesWithTargetCount(), minTargetsHit);
+//        }
         List<PermutationBookmark> sortedSavedEntities = finishedCheckers.stream()
                 .flatMap(p -> p.getSequencesToSave().stream())
                 .sorted()
@@ -122,10 +128,10 @@ public class PermutationChecker {
         System.out.println("Filtering " + sortedSavedEntities.size() + " saved sequences.");
         this.finalSequencesToSave = new ArrayList<>();
         PermutationBookmark currentEntity = null;
-        System.out.println("Min targets Hit: " + minTargetsHit);
+//        System.out.println("Min targets Hit: " + minTargetsHit);
         for (int i = 0;i<sortedSavedEntities.size();++i) {
             if (!sortedSavedEntities.get(i).equals(currentEntity)) {
-                if (currentEntity != null && currentEntity.getChangesCount() < (positions.length - minTargetsHit)) {
+                if (currentEntity != null && currentEntity.getChangesCount() < maxChanges) {
                     finalSequencesToSave.add(currentEntity);
                 }
                 currentEntity = sortedSavedEntities.get(i);
@@ -140,41 +146,68 @@ public class PermutationChecker {
 
     }
 
-    public PermutationChecker searchWithMove(Move move) {
-        if (moves.isEmpty() || !(move.equals(moves.peek().getInverse()))) {
-            this.transform(move);
-            ++count;
-            moves.push(move);
+    public PermutationChecker searchWithMove(int index) {
+        if (moveIndexes.isEmpty() || !(allowedMoves[index].equals(allowedMoves[moveIndexes.peek()].getInverse()))) {
+            this.transform(allowedMoves[index]);
+            moveIndex = 0;
+            moveIndexes.push(index);
             handleSaving();
-            if (moves.size() < maxDepth) {
-                allowedMoves.forEach(this::searchWithMove);
-            }
-            this.transform(moves.pop().getInverse());
+            while (performStep());
+            this.transform(allowedMoves[moveIndexes.pop()].getInverse());
         }
         return this;
     }
 
-    public void transform(Move move) {
+    protected boolean performStep() {
+        while (moveIndex == allowedMoves.length) {
+            if (moveIndexes.size() <= 1) {
+                return false;
+            } else {
+                moveIndex = moveIndexes.pop();
+                this.transform(allowedMoves[moveIndex].getInverse());
+                ++moveIndex;
+            }
+        }
+        if (moveIndexes.isEmpty() || !(allowedMoves[moveIndex].equals(allowedMoves[moveIndexes.peek()].getInverse()))) {
+            this.transform(allowedMoves[moveIndex]);
+            handleSaving();
+            if (moveIndexes.size() < maxDepth) {
+                moveIndexes.push(moveIndex);
+                moveIndex = 0;
+            } else {
+                this.transform(allowedMoves[moveIndex].getInverse());
+                ++moveIndex;
+            }
+        } else {
+            ++moveIndex;
+        }
+        return true;
+    }
+
+    public void transform(final Move move) {
         int lastIndex = -1;
         int lastValue = -1;
-        for (int[] swap : move.getSwaps()) {
-            if (lastIndex != swap[1]) {
-                lastIndex = swap[0];
-                lastValue = positions[swap[0]];
-                recordCountChanges(swap[0], positions[swap[1]]);
-                positions[swap[0]] = positions[swap[1]];
+        final int[][] swaps = move.getSwaps();
+        for (int i = 0;i < swaps.length;++i) {
+            if (lastIndex != swaps[i][1]) {
+                lastIndex = swaps[i][0];
+                lastValue = positions[swaps[i][0]];
+                recordCountChanges(swaps[i][0], positions[swaps[i][1]]);
+                positions[swaps[i][0]] = positions[swaps[i][1]];
             } else {
-                final int temp = positions[swap[0]];
-                recordCountChanges(swap[0], lastValue);
-                positions[swap[0]] = lastValue;
-                lastIndex = swap[0];
+                final int temp = positions[swaps[i][0]];
+                recordCountChanges(swaps[i][0], lastValue);
+                positions[swaps[i][0]] = lastValue;
+                lastIndex = swaps[i][0];
                 lastValue = temp;
             }
         }
     }
 
     public List<Move> getMoveList() {
-        return new ArrayList<>(moves.reversed());
+        return moveIndexes.reversed().stream()
+                .map(i -> allowedMoves[i])
+                .collect(Collectors.toList());
     }
 
     protected void handleSaving() {
@@ -183,7 +216,7 @@ public class PermutationChecker {
             if (this.matchesWithTargetCount[t] > closestTargetCount[t] ||
                     closestToTarget[t] == null ||
                     (this.matchesWithTargetCount[t] == closestTargetCount[t] &&
-                                    this.moves.size() < closestToTarget[t].getMoves().size())) {
+                                    this.moveIndexes.size() < closestToTarget[t].getMoves().size())) {
                 int[] savePositions = new int[positions.length];
                 System.arraycopy(positions, 0, savePositions, 0, positions.length);
                 closestToTarget[t] = PermutationBookmark.builder()
@@ -199,7 +232,7 @@ public class PermutationChecker {
         if (gotCloserToTargets) {
             maxChanges = calculateMaxChanges();
         }
-        if (changesCount <= maxChanges) {
+        if (changesCount < maxChanges) {
                 int[] savePositions = new int[positions.length];
                 System.arraycopy(positions, 0, savePositions, 0, positions.length);
                 sequencesToSave.add(PermutationBookmark.builder()

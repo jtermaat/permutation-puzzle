@@ -18,8 +18,8 @@ import java.util.stream.Stream;
 public class PuzzleInfo {
     private String puzzleType;
 
-    private List<Move> allowedMoves;
-
+//    private List<Move> allowedMoves;
+    private Move[] allowedMoves;
     public static PuzzleInfo getFromString(String lineString) {
         lineString = lineString.replaceAll("\n", "");
         try {
@@ -46,14 +46,18 @@ public class PuzzleInfo {
                             .build());
                     ++moveIdCount;
                 }
-                List<Move> allowedMoves = allowed.stream()
+                List<Move> allowedMovesList = allowed.stream()
                         .flatMap(move -> {
                             Move inverse = move.createInverted(allowed.size());
                             inverse.setInverse(move);
                             move.setInverse(inverse);
                             return Stream.of(move, inverse);
                         }).toList();
-                allowedMoves.forEach(Move::initSwaps);
+                allowedMovesList.forEach(Move::initSwaps);
+                Move[] allowedMoves = new Move[allowedMovesList.size()];
+                for (int j = 0;j<allowedMoves.length;++j) {
+                    allowedMoves[j] = allowedMovesList.get(j);
+                }
                 return PuzzleInfo.builder()
                         .allowedMoves(allowedMoves)
                         .puzzleType(puzzleType)

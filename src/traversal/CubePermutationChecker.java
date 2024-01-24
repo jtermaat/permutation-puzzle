@@ -10,44 +10,56 @@ import model.PuzzleInfo;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Data
 public class CubePermutationChecker extends PermutationChecker {
-    private Move secondToLastMove;
+    private int secondToLastMove;
 
-    public CubePermutationChecker(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth) {
-        super(puzzles, puzzleInfo, maxDepth);
+    public CubePermutationChecker(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth, int maxChanges) {
+        super(puzzles, puzzleInfo, maxDepth, maxChanges);
+        secondToLastMove = -1;
     }
 
+    @Override
     public void performSearch() {
-        gatherDataAndRemoveDuplicates(allowedMoves.parallelStream()
-                .map(move -> new CubePermutationChecker(puzzles, puzzleInfo, maxDepth).searchWithMove(move))
+        gatherDataAndRemoveDuplicates(IntStream.range(0, allowedMoves.length).boxed().toList().parallelStream()
+                .map(index -> new CubePermutationChecker(puzzles, puzzleInfo, maxDepth, maxChanges).searchWithMove(index))
                 .toList());
     }
 
     @Override
-    public PermutationChecker searchWithMove(Move move) {
-        if (moves.isEmpty()
-                || !(move.equals(moves.peek().getInverse())
-                        || move.equals(moves.peek())
-                        && (move.isInversion()
-                            || move.equals(secondToLastMove)))) {
-            this.transform(move);
-            ++count;
-            secondToLastMove = moves.peek();
-            moves.push(move);
-            handleSaving();
-            if (moves.size() < maxDepth) {
-                allowedMoves.forEach(this::searchWithMove);
-            }
-            this.transform(moves.pop().getInverse());
-            if (moves.size() > 1) {
-                Move lastMove = moves.pop();
-                secondToLastMove = moves.peek();
-                moves.push(lastMove);
+    protected boolean performStep() {
+        while (moveIndex == allowedMoves.length) {
+            if (moveIndexes.size() <= 1) {
+                return false;
+            } else {
+                moveIndex = moveIndexes.pop();
+                this.transform(allowedMoves[moveIndex].getInverse());
+                ++moveIndex;
             }
         }
-        return this;
+        if (moveIndexes.isEmpty() || !(allowedMoves[moveIndex].equals(allowedMoves[moveIndexes.peek()].getInverse())
+                                        || moveIndex == moveIndexes.peek()
+                                        && (allowedMoves[moveIndex].isInversion()
+                                            || secondToLastMove == moveIndex))) {
+            this.transform(allowedMoves[moveIndex]);
+            handleSaving();
+            if (moveIndexes.size() < maxDepth) {
+                secondToLastMove = moveIndexes.peek();
+                moveIndexes.push(moveIndex);
+                moveIndex = 0;
+            } else {
+                this.transform(allowedMoves[moveIndex].getInverse());
+                int lastIndex = moveIndexes.pop();
+                secondToLastMove = moveIndexes.peek();
+                moveIndexes.push(lastIndex);
+                ++moveIndex;
+            }
+        } else {
+            ++moveIndex;
+        }
+        return true;
     }
 
 }

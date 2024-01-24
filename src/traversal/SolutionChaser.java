@@ -24,16 +24,25 @@ public class SolutionChaser extends PermutationChecker {
     private int targetNum;
 
     public SolutionChaser(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth) {
-        super(puzzles, puzzleInfo, maxDepth);
+        super(puzzles, puzzleInfo, maxDepth, 0);
     }
 
-    public SolutionChaser(PermutationChecker checker) {
-        super(checker.getPuzzles(), checker.getPuzzleInfo(), checker.maxDepth);
+    public SolutionChaser(PermutationChecker checker, int maxDepth) {
+        super(checker.getPuzzles(), checker.getPuzzleInfo(), maxDepth, 0);
         this.closestToTarget = checker.getClosestToTarget();
         this.closestTargetCount = checker.getClosestTargetCount();
-        this.allowedMoves = checker.getSequencesToSave().stream()
+        this.allowedMoves = new Move[checker.getSequencesToSave().size()];
+        List<Move> allowedMovesList = checker.getSequencesToSave().stream()
                 .map(PermutationBookmark::toMove)
                 .toList();
+        for (int i = 0;i<allowedMovesList.size();++i) {
+            allowedMoves[i] = allowedMovesList.get(i);
+        }
+    }
+
+    public SolutionChaser(PermutationChecker checker, int maxDepth, Move[] allowedMoves) {
+        this(checker, maxDepth);
+        this.allowedMoves = allowedMoves;
     }
 
     @Override
@@ -110,8 +119,9 @@ public class SolutionChaser extends PermutationChecker {
     protected PermutationBookmark getNextTransitionGreedy(PermutationBookmark last) {
         int parallelChasersCount = 128;
         List<List<Move>> moveLists = new ArrayList<>();
-        for (int i = 1;i<allowedMoves.size() / parallelChasersCount;++i) {
-            moveLists.add(allowedMoves.subList((i-1)*parallelChasersCount, i*parallelChasersCount));
+        List<Move> allowedMovesList = List.of(allowedMoves);
+        for (int i = 1;i<allowedMoves.length / parallelChasersCount;++i) {
+            moveLists.add(allowedMovesList.subList((i-1)*parallelChasersCount, i*parallelChasersCount));
         }
         List<PermutationBookmark> bestTransitions = moveLists.stream()
                 .map(s -> duplicate(last).getNextTransitionGreedyFromMoves(s))
@@ -129,10 +139,16 @@ public class SolutionChaser extends PermutationChecker {
     }
 
     public PermutationBookmark getNextTransitionGreedyFromMoves(List<Move> moves) {
+//        System.out.println("Trying " + moves.size() + " moves out of " + allowedMoves.size() + " moves.");
         moves.forEach(move -> {
            this.transform(move);
+           --this.maxDepth;
            checkPermutationEntity();
+           if (this.maxDepth > 0) {
+               getNextTransitionGreedyFromMoves(List.of(this.allowedMoves));
+           }
            this.transform(move.getInverse());
+           ++this.maxDepth;
         });
         return this.closestToTarget[targetNum];
     }
@@ -154,7 +170,7 @@ public class SolutionChaser extends PermutationChecker {
     }
 
     protected SolutionChaser duplicate(PermutationBookmark lastPermutation) {
-        SolutionChaser returnValue = new SolutionChaser(this);
+        SolutionChaser returnValue = new SolutionChaser(this, this.maxDepth, this.allowedMoves);
         if (lastPermutation != null) {
             returnValue.positions = new int[returnValue.positions.length];
             System.arraycopy(lastPermutation.getPositions(), 0, returnValue.positions, 0, returnValue.positions.length);
