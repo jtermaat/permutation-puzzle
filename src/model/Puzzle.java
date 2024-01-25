@@ -2,12 +2,15 @@ package model;
 
 import lombok.Builder;
 import lombok.Data;
+import traversal.PathCollector;
+import traversal.Permutation;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Data
@@ -15,10 +18,17 @@ import java.util.stream.Collectors;
 public class Puzzle {
     private final int id;
     private final String puzzleType;
+    private PuzzleInfo puzzleInfo;
     private final int[] initialState;
-//    private final int[] solutionState;
     private final boolean[][] solutionState;
     private final int numWildcards;
+    private List<Path> paths;
+    private MoveNode existingSolution;
+
+    public void findPathsAndAddToPathMap(Map<Long, Map<Permutation, List<Path>>> pathMap, int depth) {
+        PathCollector pathCollector = new PathCollector(this, puzzleInfo, depth);
+        pathCollector.collectPaths(existingSolution, pathMap);
+    }
 
     public static Puzzle getFromString(String str) {
         try {
@@ -55,16 +65,40 @@ public class Puzzle {
         return null;
     }
 
-    public static List<Puzzle> readPuzzleList(String filename) {
+    public static List<Puzzle> readPuzzleList(String filename, String solutionFilename, PuzzleInfo puzzleInfo) {
         try {
             String str = Files.readString(new File(filename).toPath(), Charset.defaultCharset());
-            return Arrays.stream(str.split("\n")).map(Puzzle::getFromString)
+            String solutionStr = Files.readString(new File(solutionFilename).toPath(), Charset.defaultCharset());
+            String[] solutionParts = solutionStr.split("\n");
+            Map<Integer, List<Move>> idToMoveListMap = new HashMap<>();
+            for (int i = 0;i<solutionParts.length;++i) {
+                String[] solutionSubParts = solutionParts[i].split(",");
+                int thisId = Integer.parseInt(solutionSubParts[0]);
+                List<Move> moves = getMovesFromString(solutionSubParts[1], puzzleInfo);
+                idToMoveListMap.put(thisId, moves);
+            }
+            List<Puzzle> puzzleList = Arrays.stream(str.split("\n")).map(Puzzle::getFromString)
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+                    .toList();
+            puzzleList.forEach(p -> p.setExistingSolution(MoveNode.fromList(idToMoveListMap.get(p.getId()))));
+            puzzleList.forEach(p -> p.setPuzzleInfo(puzzleInfo));
+            return puzzleList;
+
         } catch (IOException ie) {
             System.out.println("Error reading puzzle objects from file " + filename);
             ie.printStackTrace();
             return null;
         }
+    }
+
+    public static List<Move> getMovesFromString(String str, PuzzleInfo puzzleInfo) {
+        List<Move> moves = new ArrayList<>();
+        Map<String, Move> moveMap = List.of(puzzleInfo.getAllowedMoves()).stream()
+                .collect(Collectors.toMap(Move::getName, Function.identity()));
+        String[] parts = str.split(".");
+        for (int i = 0;i<parts.length;++i) {
+            moves.add(moveMap.get(parts[i]));
+        }
+        return moves;
     }
 }

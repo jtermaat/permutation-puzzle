@@ -35,15 +35,14 @@ public class PermutationChecker {
     protected int[] closestTargetCount;
     protected long count;
     protected int[] wildcards;
-    protected int changesCount;
-    protected int maxChanges;
 
     protected List<Puzzle> puzzles;
     protected PuzzleInfo puzzleInfo;
+    protected long gameHash;
 
 
 
-    public PermutationChecker(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth, int maxChanges) {
+    public PermutationChecker(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth) {
         this.puzzles = puzzles;
         this.puzzleInfo = puzzleInfo;
         this.numTargets = puzzles.size();
@@ -70,17 +69,14 @@ public class PermutationChecker {
             }
             this.wildcards[t] = puzzles.get(t).getNumWildcards();
         }
-        this.maxChanges = maxChanges;
+        this.calculateGameHash();
     }
 
-    protected int calculateMaxChanges() {
-        int minClosestTargetCount = closestTargetCount[0];
-        for (int i = 1;i<closestTargetCount.length;++i) {
-            if (closestTargetCount[i] < minClosestTargetCount) {
-                minClosestTargetCount = closestTargetCount[i];
-            }
+    protected void calculateGameHash() {
+        gameHash = 0L;
+        for (int i = 0;i<positions.length;++i) {
+            gameHash += (long)Math.pow(2, i) * positions[i];
         }
-        return positions.length - minClosestTargetCount;
     }
 
 
@@ -92,16 +88,12 @@ public class PermutationChecker {
                 ++matchesWithTargetCount[t];
             }
         }
-        if (positions[index] == index) {
-            ++changesCount;
-        } else if (newValue == index) {
-            --changesCount;
-        }
+        this.gameHash += (long)Math.pow(2, index) * newValue - (long)Math.pow(2, index) * positions[index];
     }
 
     public void performSearch() {
         gatherDataAndRemoveDuplicates(IntStream.range(0, allowedMoves.length).boxed().toList().parallelStream()
-                .map(index -> new PermutationChecker(puzzles, puzzleInfo, maxDepth, maxChanges).searchWithMove(index))
+                .map(index -> new PermutationChecker(puzzles, puzzleInfo, maxDepth).searchWithMove(index))
                 .toList());
     }
 
@@ -118,32 +110,6 @@ public class PermutationChecker {
                 }
             }
         }
-//        for (int i = 0;i < numTargets;++i) {
-//            minTargetsHit = Math.min(this.closestToTarget[i].getMatchesWithTargetCount(), minTargetsHit);
-//        }
-        List<PermutationBookmark> sortedSavedEntities = finishedCheckers.stream()
-                .flatMap(p -> p.getSequencesToSave().stream())
-                .sorted()
-                .toList();
-        System.out.println("Filtering " + sortedSavedEntities.size() + " saved sequences.");
-        this.finalSequencesToSave = new ArrayList<>();
-        PermutationBookmark currentEntity = null;
-//        System.out.println("Min targets Hit: " + minTargetsHit);
-        for (int i = 0;i<sortedSavedEntities.size();++i) {
-            if (!sortedSavedEntities.get(i).equals(currentEntity)) {
-                if (currentEntity != null && currentEntity.getChangesCount() < maxChanges) {
-                    finalSequencesToSave.add(currentEntity);
-                }
-                currentEntity = sortedSavedEntities.get(i);
-            } else {
-                if (sortedSavedEntities.get(i).getMoves().size() < currentEntity.getMoves().size()) {
-                    currentEntity = sortedSavedEntities.get(i);
-                }
-            }
-        }
-        this.sequencesToSave = finalSequencesToSave;
-        System.out.println("Gathered " + this.sequencesToSave.size() + " filtered sequences to evaluate with all Threads.");
-
     }
 
     public PermutationChecker searchWithMove(int index) {
@@ -211,13 +177,12 @@ public class PermutationChecker {
     }
 
     protected void handleSaving() {
-        boolean gotCloserToTargets = false;
         for (int t = 0;t<numTargets;++t) {
             if (this.matchesWithTargetCount[t] > closestTargetCount[t] ||
                     closestToTarget[t] == null ||
                     (this.matchesWithTargetCount[t] == closestTargetCount[t] &&
                                     this.moveIndexes.size() < closestToTarget[t].getMoves().size())) {
-                int[] savePositions = new int[positions.length];
+                final int[] savePositions = new int[positions.length];
                 System.arraycopy(positions, 0, savePositions, 0, positions.length);
                 closestToTarget[t] = PermutationBookmark.builder()
                         .id((int)count)
@@ -226,22 +191,7 @@ public class PermutationChecker {
                         .matchesWithTargetCount(this.matchesWithTargetCount[t])
                         .build();
                 closestTargetCount[t] = matchesWithTargetCount[t];
-                gotCloserToTargets = true;
             }
-        }
-        if (gotCloserToTargets) {
-            maxChanges = calculateMaxChanges();
-        }
-        if (changesCount < maxChanges) {
-                int[] savePositions = new int[positions.length];
-                System.arraycopy(positions, 0, savePositions, 0, positions.length);
-                sequencesToSave.add(PermutationBookmark.builder()
-                        .moves(getMoveList())
-                        .positions(savePositions)
-                        .changesCount(this.changesCount)
-                        .id(sequencesToSave.size())
-                        .build());
-
         }
     }
 

@@ -24,11 +24,11 @@ public class SolutionChaser extends PermutationChecker {
     private int targetNum;
 
     public SolutionChaser(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth) {
-        super(puzzles, puzzleInfo, maxDepth, 0);
+        super(puzzles, puzzleInfo, maxDepth);
     }
 
     public SolutionChaser(PermutationChecker checker, int maxDepth) {
-        super(checker.getPuzzles(), checker.getPuzzleInfo(), maxDepth, 0);
+        super(checker.getPuzzles(), checker.getPuzzleInfo(), maxDepth);
         this.closestToTarget = checker.getClosestToTarget();
         this.closestTargetCount = checker.getClosestTargetCount();
         this.allowedMoves = new Move[checker.getSequencesToSave().size()];
