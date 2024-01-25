@@ -1,23 +1,22 @@
 package traversal;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import model.*;
 
 import java.util.*;
 
-@AllArgsConstructor
 @Data
 public class PathCollector extends Permutation {
     private Puzzle puzzle;
     private Move[] allowedMoves;
     private int maxDepth;
-    public PathCollector(Puzzle puzzle, PuzzleInfo puzzleInfo, int maxDepth) {
+    private final Map<Long, Map<Permutation, List<Path>>> pathMap;
+    public PathCollector(Puzzle puzzle, PuzzleInfo puzzleInfo, int maxDepth, Map<Long, Map<Permutation, List<Path>>> pathMap) {
         super(puzzle.getInitialState());
         this.puzzle = puzzle;
         this.allowedMoves = puzzleInfo.getAllowedMoves();
         this.maxDepth = maxDepth;
+        this.pathMap = pathMap;
     }
 
     protected void resetPositions() {
@@ -26,7 +25,8 @@ public class PathCollector extends Permutation {
         }
     }
 
-    public void collectPaths(MoveNode firstNode, Map<Long, Map<Permutation, List<Path>>> pathMap) {
+    public void collectPaths() {
+        MoveNode firstNode = puzzle.getSolution();
         while (firstNode != null) {
             this.resetPositions();
             this.calculateGameHash();

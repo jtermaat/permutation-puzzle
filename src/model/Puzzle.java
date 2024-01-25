@@ -2,8 +2,6 @@ package model;
 
 import lombok.Builder;
 import lombok.Data;
-import traversal.PathCollector;
-import traversal.Permutation;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,11 +21,10 @@ public class Puzzle {
     private final boolean[][] solutionState;
     private final int numWildcards;
     private List<Path> paths;
-    private MoveNode existingSolution;
+    private MoveNode solution;
 
-    public void findPathsAndAddToPathMap(Map<Long, Map<Permutation, List<Path>>> pathMap, int depth) {
-        PathCollector pathCollector = new PathCollector(this, puzzleInfo, depth);
-        pathCollector.collectPaths(existingSolution, pathMap);
+    public int getSolutionLength() {
+        return solution.getLength();
     }
 
     public static Puzzle getFromString(String str) {
@@ -80,7 +77,7 @@ public class Puzzle {
             List<Puzzle> puzzleList = Arrays.stream(str.split("\n")).map(Puzzle::getFromString)
                     .filter(Objects::nonNull)
                     .toList();
-            puzzleList.forEach(p -> p.setExistingSolution(MoveNode.fromList(idToMoveListMap.get(p.getId()))));
+            puzzleList.forEach(p -> p.setSolution(MoveNode.fromList(idToMoveListMap.get(p.getId()))));
             puzzleList.forEach(p -> p.setPuzzleInfo(puzzleInfo));
             return puzzleList;
 

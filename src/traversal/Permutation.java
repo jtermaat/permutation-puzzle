@@ -7,12 +7,13 @@ import model.Move;
 import model.Path;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class Permutation implements Comparable<Permutation> {
 
     protected int[] positions;
     protected long gameHash;
-    final private long[] powersOfTwo;
+    private long[] powersOfTwo;
 
 
     public Permutation(int[] positions) {

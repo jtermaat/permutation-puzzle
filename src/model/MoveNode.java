@@ -62,6 +62,14 @@ public class MoveNode {
         options.add(next);
     }
 
+    public int getLength() {
+        if (next == null) {
+            return 1;
+        } else {
+            return next.getLength() + 1;
+        }
+    }
+
     public void optimizeRoute() {
         Queue<MoveNode> nodeQueue = new LinkedList<>();
         nodeQueue.offer(this);
