@@ -1,5 +1,7 @@
 package model;
 
+import main.PuzzleSolver;
+
 import java.util.List;
 
 public class Shortcut {
@@ -13,7 +15,22 @@ public class Shortcut {
         this.shortcutMoves = shortcutMoves;
     }
 
+    public void print() {
+        System.out.print("Original path: ");
+        start.printPathTo(end);
+        System.out.println();
+        System.out.println("Shortcut moves: " + shortcutMoves.stream()
+                .map(Move::getName)
+                .reduce("", (a, b) -> a.concat(".").concat(b)));
+        System.out.println();
+    }
+
     public void activate() {
         start.createChainTo(end, shortcutMoves);
+    }
+
+    public void validate() {
+        List<Move> originalMoves = start.toList(end);
+        PuzzleSolver.validateEquality(originalMoves, shortcutMoves);
     }
 }

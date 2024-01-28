@@ -13,27 +13,28 @@ import java.util.stream.Collectors;
 public class Move {
     final private Integer id;
     final private String name;
-    final private int[] newPositions;
+    final private short[] newPositions;
 //    private List<int[]> swaps;
-    int[][] swaps;
+    short[][] swaps;
     final private boolean isInversion;
     private Move inverse;
     private Integer targetMatchCount;
 
-    public Move(int id, String name, int[] newPositions, boolean inverted) {
+    public Move(int id, String name, short[] newPositions, boolean inverted) {
         this.name = name;
         if (!inverted) {
             this.newPositions = newPositions;
             isInversion = false;
             this.id = id;
         } else {
-            this.newPositions = new int[newPositions.length];
+            this.newPositions = new short[newPositions.length];
             this.id = id * -1;
-            List<Integer> newPositionsList = Arrays.stream(newPositions)
-                    .boxed()
-                    .toList();
-            for (int i = 0;i<newPositions.length;++i) {
-                this.newPositions[i] = newPositionsList.indexOf(i);
+            List<Short> newPositionsList = new ArrayList<>(newPositions.length);
+            for (short newPosition : newPositions) {
+                newPositionsList.add(newPosition);
+            }
+            for (short i = 0;i<newPositions.length;++i) {
+                this.newPositions[i] = (short)newPositionsList.indexOf(i);
             }
             isInversion = true;
         }
@@ -41,26 +42,26 @@ public class Move {
     }
 
     public void initSwaps() {
-        Queue<List<Integer>> swapsQueue = new PriorityQueue<>((a, b) -> a.get(1).compareTo(b.get(1)));
-        for (int i = 0;i<newPositions.length;i++) {
+        Queue<List<Short>> swapsQueue = new PriorityQueue<>((a, b) -> a.get(1).compareTo(b.get(1)));
+        for (short i = 0;i<newPositions.length;i++) {
             if (newPositions[i] != i) {
-                List<Integer> wrapperSwap = new ArrayList<>(2);
+                List<Short> wrapperSwap = new ArrayList<>(2);
                 wrapperSwap.add(i);
                 wrapperSwap.add(newPositions[i]);
                 swapsQueue.offer(wrapperSwap);
             }
         }
-        Map<Integer, List<Integer>> swapsMap = swapsQueue.stream()
+        Map<Short, List<Short>> swapsMap = swapsQueue.stream()
                 .collect(Collectors.toMap(a -> a.get(1), a -> a));
 //        swaps = new ArrayList<>();
-        List<int[]> swapsList = new ArrayList<>();
+        List<short[]> swapsList = new ArrayList<>();
         while(!swapsQueue.isEmpty()) {
-            List<Integer> nextSwap = swapsQueue.poll();
-            int swapIndex = nextSwap.get(0);
-            int swapValue = nextSwap.get(1);
+            List<Short> nextSwap = swapsQueue.poll();
+            short swapIndex = nextSwap.get(0);
+            short swapValue = nextSwap.get(1);
             boolean finished = false;
             while (swapIndex != swapValue && !finished) {
-                swapsList.add(new int[]{swapIndex, swapValue});
+                swapsList.add(new short[]{swapIndex, swapValue});
                 nextSwap = swapsMap.get(swapIndex);
                 if (!swapsQueue.contains(nextSwap)) {
                     finished = true;
@@ -72,9 +73,9 @@ public class Move {
             }
         }
         Object[] swapsObject = swapsList.toArray();
-        swaps = new int[swapsObject.length][2];
+        swaps = new short[swapsObject.length][2];
         for (int i = 0;i<swapsObject.length;i++) {
-            swaps[i] = (int[])swapsObject[i];
+            swaps[i] = (short[])swapsObject[i];
         }
     }
 

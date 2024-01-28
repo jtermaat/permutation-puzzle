@@ -37,7 +37,15 @@ public class ShortcutHunter extends Permutation {
                 .flatMap(h -> h.foundShortcuts.stream())
                 .toList();
         System.out.println("Found " + foundShortcuts.size() + " total shortcuts.");
+//        this.foundShortcuts.forEach(Shortcut::print);
+//        this.foundShortcuts.forEach(Shortcut::validate);
+        this.foundShortcuts.forEach(s -> {
+            s.print();
+            s.validate();
+        });
+        System.out.println("activating shortcuts.");
         this.foundShortcuts.forEach(Shortcut::activate);
+        System.out.println("shortcuts activated.");
     }
 
     public ShortcutHunter searchWithMove(int index) {
@@ -64,11 +72,11 @@ public class ShortcutHunter extends Permutation {
         }
         if (moveIndexes.isEmpty() || !(allowedMoves[moveIndex].equals(allowedMoves[moveIndexes.peek()].getInverse()))) {
             this.transform(allowedMoves[moveIndex]);
+            moveIndexes.push(moveIndex);
+            moveIndex = 0;
             handleSaving();
-            if (moveIndexes.size() < maxDepth) {
-                moveIndexes.push(moveIndex);
-                moveIndex = 0;
-            } else {
+            if (moveIndexes.size() >= maxDepth) {
+                moveIndex = moveIndexes.pop();
                 this.transform(allowedMoves[moveIndex].getInverse());
                 ++moveIndex;
             }
@@ -80,12 +88,45 @@ public class ShortcutHunter extends Permutation {
 
     protected void handleSaving() {
         Map<Permutation, List<Path>> matches = pathMap.get(gameHash);
+        Path thisPath = new Path(positions, gameHash);
         if (matches != null) {
-            if (matches.containsKey(this)) {
-                for (Path path : matches.get(this)) {
-                    foundShortcuts.add(new Shortcut(path.getStart(), path.getEnd(), getMoveList()));
+            for (Permutation permutation : matches.keySet()) {
+                boolean match = true;
+                for (int i = 0;i<permutation.getPositions().length;++i) {
+                    if (permutation.getPositions()[i] != this.positions[i]) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+//                    System.out.println("We have a match.");
+                    for (Path path : matches.get(permutation)) {
+                        boolean anotherMatch = true;
+                        for (int i = 0;i<path.getPositions().length;++i) {
+                            if (path.getPositions()[i] != this.positions[i]) {
+                                anotherMatch = false;
+                                break;
+                            }
+                        }
+                        if (anotherMatch) {
+                            System.out.println("Legit match found.");
+                            Shortcut newShortcut = new Shortcut(path.getStart(), path.getEnd(), getMoveList());
+                            System.out.println("Printing shortcut.");
+                            newShortcut.print();
+                            System.out.println("Validating shortcut.");
+                            newShortcut.validate();
+                            foundShortcuts.add(new Shortcut(path.getStart(), path.getEnd(), getMoveList()));
+                        } else {
+                            System.out.println("False match found.");
+                        }
+                    }
                 }
             }
+//            if (matches.containsKey(thisPath)) {
+//                for (Path path : matches.get(thisPath)) {
+//                    foundShortcuts.add(new Shortcut(path.getStart(), path.getEnd(), getMoveList()));
+//                }
+//            }
         }
     }
 

@@ -17,7 +17,7 @@ public class Puzzle {
     private final int id;
     private final String puzzleType;
     private PuzzleInfo puzzleInfo;
-    private final int[] initialState;
+    private final short[] initialState;
     private final boolean[][] solutionState;
     private final int numWildcards;
     private List<Path> paths;
@@ -35,9 +35,9 @@ public class Puzzle {
             final int newNumWildcards = Integer.parseInt(parts[4]);
             final String[] newSolutionStateStrings = parts[2].split(";");
             final String[] newInitialStateStrings = parts[3].split(";");
-            final int[] newInitialState = new int[newInitialStateStrings.length];
-            final Map<String, Set<Integer>> stringToIntSetMap = new HashMap<>();
-            for (int i = 0; i < newInitialState.length; ++i) {
+            final short[] newInitialState = new short[newInitialStateStrings.length];
+            final Map<String, Set<Short>> stringToIntSetMap = new HashMap<>();
+            for (short i = 0; i < newInitialState.length; ++i) {
                 newInitialState[i] = i;
                 stringToIntSetMap.putIfAbsent(newInitialStateStrings[i], new HashSet<>());
                 stringToIntSetMap.get(newInitialStateStrings[i]).add(i);
@@ -69,10 +69,15 @@ public class Puzzle {
             String[] solutionParts = solutionStr.split("\n");
             Map<Integer, List<Move>> idToMoveListMap = new HashMap<>();
             for (int i = 0;i<solutionParts.length;++i) {
-                String[] solutionSubParts = solutionParts[i].split(",");
-                int thisId = Integer.parseInt(solutionSubParts[0]);
-                List<Move> moves = getMovesFromString(solutionSubParts[1], puzzleInfo);
-                idToMoveListMap.put(thisId, moves);
+                try {
+                    String[] solutionSubParts = solutionParts[i].split(",");
+                    int thisId = Integer.parseInt(solutionSubParts[0]);
+                    List<Move> moves = getMovesFromString(solutionSubParts[1], puzzleInfo);
+//                    System.out.println("Adding moves " + moves + " from string " + solutionSubParts[1] + " to id " + thisId);
+                    idToMoveListMap.put(thisId, moves);
+                } catch (NumberFormatException e) {
+                    System.out.println("Skipping line " + solutionParts[i]);
+                }
             }
             List<Puzzle> puzzleList = Arrays.stream(str.split("\n")).map(Puzzle::getFromString)
                     .filter(Objects::nonNull)
@@ -92,7 +97,7 @@ public class Puzzle {
         List<Move> moves = new ArrayList<>();
         Map<String, Move> moveMap = List.of(puzzleInfo.getAllowedMoves()).stream()
                 .collect(Collectors.toMap(Move::getName, Function.identity()));
-        String[] parts = str.split(".");
+        String[] parts = str.split("\\.");
         for (int i = 0;i<parts.length;++i) {
             moves.add(moveMap.get(parts[i]));
         }

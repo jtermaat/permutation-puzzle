@@ -27,7 +27,14 @@ public class CubeShortcutHunter extends ShortcutHunter {
                 .flatMap(h -> h.foundShortcuts.stream())
                 .toList();
         System.out.println("Found " + foundShortcuts.size() + " total shortcuts.");
+//        this.foundShortcuts.forEach(Shortcut::print);
+//        this.foundShortcuts.forEach(s -> {
+//            s.print();
+//            s.validate();
+//        });
+        System.out.println("activating shortcuts.");
         this.foundShortcuts.forEach(Shortcut::activate);
+        System.out.println("shortcuts activated.");
     }
 
     @Override
@@ -46,17 +53,17 @@ public class CubeShortcutHunter extends ShortcutHunter {
                 && (allowedMoves[moveIndex].isInversion()
                 || secondToLastMove == moveIndex))) {
             this.transform(allowedMoves[moveIndex]);
+            secondToLastMove = moveIndexes.peek();
+            moveIndexes.push(moveIndex);
+            moveIndex = 0;
             handleSaving();
-            if (moveIndexes.size() < maxDepth) {
-                secondToLastMove = moveIndexes.peek();
-                moveIndexes.push(moveIndex);
-                moveIndex = 0;
-            } else {
+            if (moveIndexes.size() >= maxDepth) {
+                moveIndex = moveIndexes.pop();
                 this.transform(allowedMoves[moveIndex].getInverse());
+                ++moveIndex;
                 int lastIndex = moveIndexes.pop();
                 secondToLastMove = moveIndexes.peek();
                 moveIndexes.push(lastIndex);
-                ++moveIndex;
             }
         } else {
             ++moveIndex;

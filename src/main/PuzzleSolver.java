@@ -12,26 +12,31 @@ import java.util.stream.Collectors;
 
 public class PuzzleSolver {
 //    final static String PUZZLE_TYPE = "cube_2/2/2";
-//    final static String PUZZLE_TYPE = "globe_1/8";
-    final static String PUZZLE_TYPE = "cube_3/3/3";
-    final static int MAX_DEPTH = 7;
+//    final static String PUZZLE_TYPE = "globe_3/33";
+    final static String PUZZLE_TYPE = "cube_5/5/5";
+    final static int MAX_DEPTH = 8;
 
     public static void main(String[] args) {
         String puzzlesFilename = "/Users/johntermaat/Downloads/puzzles.csv";
         String puzzleInfosFilename = "/Users/johntermaat/Downloads/puzzle_info.csv";
         String solutionFilename = "/Users/johntermaat/Downloads/submission-" + PUZZLE_TYPE.replaceAll("/", "-") + ".csv";
         String existingSolutionFilename = "/Users/johntermaat/Downloads/submission-existing.csv";
+//        String existingSolutionFilename = "/Users/johntermaat/Downloads/sample_submission.csv";
 
         Map<String, PuzzleInfo> puzzleInfoMap = PuzzleInfo.readPuzzleInfoList(puzzleInfosFilename).stream()
                 .collect(Collectors.toMap(PuzzleInfo::getPuzzleType, Function.identity()));
         PuzzleInfo puzzleInfoToUse = puzzleInfoMap.get(PUZZLE_TYPE);
-        List<Puzzle> puzzles = Puzzle.readPuzzleList(puzzlesFilename, existingSolutionFilename, puzzleInfoToUse);
+        System.out.println("useing puzzle info " + puzzleInfoToUse.getPuzzleType());
+        List<Puzzle> puzzles = Puzzle.readPuzzleList(puzzlesFilename, existingSolutionFilename, puzzleInfoToUse).stream()
+                .filter(p -> p.getPuzzleType().equals(PUZZLE_TYPE))
+                .limit(10)
+                .toList();
         Map<Long, Map<Permutation, List<Path>>> pathMap = new HashMap<>();
         for (int i = 0;i<puzzles.size();++i) {
             PathCollector collector = new PathCollector(puzzles.get(i), puzzleInfoToUse, MAX_DEPTH, pathMap);
             collector.collectPaths();
         }
-        CubeShortcutHunter hunter = new CubeShortcutHunter(puzzles, puzzleInfoToUse, MAX_DEPTH, pathMap);
+        ShortcutHunter hunter = new CubeShortcutHunter(puzzles, puzzleInfoToUse, MAX_DEPTH, pathMap);
         int oldTotalMoveLength = puzzles.stream()
                 .map(Puzzle::getSolutionLength)
                 .reduce(0, Integer::sum);
@@ -41,6 +46,7 @@ public class PuzzleSolver {
         int newTotalMoveLength = puzzles.stream()
                 .map(Puzzle::getSolutionLength)
                 .reduce(0, Integer::sum);
+        validateSolutions(puzzles);
         System.out.println("Old total move length " + oldTotalMoveLength);
         System.out.println("New total move length " + newTotalMoveLength);
         writeSolutionsToFile(puzzles, solutionFilename);
@@ -80,22 +86,57 @@ public class PuzzleSolver {
         }
     }
 
-    public static void validateSolution(Puzzle puzzle, PuzzleInfo puzzleInfo, List<Move> moves) {
-        System.out.println("Validating solution...");
-        PermutationChecker checker = new PermutationChecker(Arrays.asList(puzzle), puzzleInfo, 1);
+    public static void validateSolutions(List<Puzzle> puzzles) {
+        for (Puzzle puzzle : puzzles) {
+            List<Move> moves = puzzle.getSolution().tolist();
+            validateSolution(puzzle, moves);
+        }
+    }
+
+    public static void validateSolution(Puzzle puzzle, List<Move> moves) {
+        System.out.println("Validating solution for puzzle " + puzzle.getId());
+        Permutation checker = new Permutation(puzzle.getInitialState());
         for (Move move : moves) {
             checker.transform(move);
         }
         boolean matches = true;
+        boolean[][] allowedPositionsSolution = puzzle.getSolutionState();
         for (int i = 0;i<checker.getPositions().length;++i) {
-            if (!checker.getTargetAllowedPositions()[0][i][checker.getPositions()[i]]) {
+            if (!allowedPositionsSolution[i][checker.getPositions()[i]]) {
                 matches = false;
             }
         }
         if (matches) {
-            System.out.println("Solution works!");
+            System.out.println("Solution " + puzzle.getId() + " works!");
         } else {
-            System.out.println("Solution FAILED");
+            System.out.println("Solution " + puzzle.getId() + " FAILED");
+        }
+    }
+
+    public static void validateEquality(List<Move> list1, List<Move> list2) {
+        System.out.println("Validating moveList equality.");
+        short[] startPositions1 = new short[list1.getFirst().getNewPositions().length];
+        short[] startPositions2 = new short[list2.getFirst().getNewPositions().length];
+        for (short i = 0;i<startPositions1.length;++i) {
+            startPositions1[i] = i;
+            startPositions2[i] = i;
+        }
+
+        final Permutation checker1 = new Permutation(startPositions1);
+        Permutation checker2 = new Permutation(startPositions2);
+        list1.forEach(checker1::transform);
+        list2.forEach(checker2::transform);
+
+        boolean matches = true;
+        for (int i = 0;i<checker1.getPositions().length;++i) {
+            if (checker1.getPositions()[i] != checker2.getPositions()[i]) {
+                matches = false;
+            }
+        }
+        if (matches) {
+            System.out.println("These move lists match!!!");
+        } else {
+            System.out.println("These move lists don't match.");
         }
     }
 

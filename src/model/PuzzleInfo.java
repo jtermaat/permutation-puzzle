@@ -34,9 +34,11 @@ public class PuzzleInfo {
                 final List<Move> allowed = new ArrayList<>();
                 int moveIdCount = 0;
                 for (String a : movesMap.keySet()) {
-                    List<Integer> positions = movesMap.get(a);
-                    int[] newPositions = new int[positions.size()];
-                    for (int i = 0; i < positions.size(); i++) {
+                    List<Short> positions = movesMap.get(a).stream()
+                            .map(s -> s.shortValue())
+                            .toList();
+                    short[] newPositions = new short[positions.size()];
+                    for (short i = 0; i < positions.size(); i++) {
                         newPositions[i] = positions.get(i);
                     }
                     allowed.add(Move.builder()
