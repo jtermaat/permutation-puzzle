@@ -1,9 +1,9 @@
-package model;
+package paths;
 
 
 import lombok.Getter;
 import lombok.Setter;
-import org.w3c.dom.Node;
+import model.Move;
 
 import java.util.*;
 
@@ -94,7 +94,6 @@ public class MoveNode {
             System.out.print(".");
             node = node.getNext();
         }
-//        System.out.println(node.getMove().getName());
     }
 
     private void setBackPointersToNull() {
@@ -119,9 +118,6 @@ public class MoveNode {
                 return;
             }
             Set<MoveNode> allNextOptions = node.getOptions();
-//            if (allNextOptions.size() > 1) {
-//                System.out.println("We have multiple options hee.");
-//            }
             for (MoveNode option : allNextOptions) {
                 if (option.getBackPointer() == null) {
                     option.setBackPointer(node);

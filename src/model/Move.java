@@ -10,15 +10,23 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 @Data
-public class Move {
+public class Move implements Comparable<Move> {
     final private Integer id;
     final private String name;
     final private short[] newPositions;
-//    private List<int[]> swaps;
     short[][] swaps;
     final private boolean isInversion;
     private Move inverse;
     private Integer targetMatchCount;
+
+    private int face;
+    private int number;
+
+    public Move(int id, String name, short[] newPositions, boolean inverted, int face, int number) {
+        this(id, name, newPositions, inverted);
+        this.face = face;
+        this.number = number;
+    }
 
     public Move(int id, String name, short[] newPositions, boolean inverted) {
         this.name = name;
@@ -41,6 +49,14 @@ public class Move {
         initSwaps();
     }
 
+    public void setFaceData(List<Character> allFaces) {
+        this.face = allFaces.indexOf(name.charAt(0));
+
+        this.number = name.length() == 1 ? 0 : Integer.parseInt(name.substring(1));
+        System.out.println("Face for " + name + " is " + this.face);
+        System.out.println("Number for " + name + " is " + this.number);
+    }
+
     public void initSwaps() {
         Queue<List<Short>> swapsQueue = new PriorityQueue<>((a, b) -> a.get(1).compareTo(b.get(1)));
         for (short i = 0;i<newPositions.length;i++) {
@@ -53,7 +69,6 @@ public class Move {
         }
         Map<Short, List<Short>> swapsMap = swapsQueue.stream()
                 .collect(Collectors.toMap(a -> a.get(1), a -> a));
-//        swaps = new ArrayList<>();
         List<short[]> swapsList = new ArrayList<>();
         while(!swapsQueue.isEmpty()) {
             List<Short> nextSwap = swapsQueue.poll();
@@ -80,12 +95,17 @@ public class Move {
     }
 
     public Move createInverted(int numIds) {
-        return new Move(this.id+numIds, "-" + this.name, this.newPositions, true);
+        return new Move(this.id+numIds, "-" + this.name, this.newPositions, true, this.face, this.number);
     }
 
     @Override
     public boolean equals(Object other) {
         return other != null && getClass() == other.getClass() && id.equals(((Move)other).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
     }
 
     @Override
@@ -98,5 +118,28 @@ public class Move {
             }
         }
         return returnString;
+    }
+
+    @Override
+    public int compareTo(Move o) {
+        if (o.isInversion() && !this.isInversion) {
+            return -1;
+        } else if (!o.isInversion && this.isInversion) {
+            return 1;
+        } else {
+            if (this.face == o.getFace()) {
+                return Integer.compare(this.number, o.getNumber());
+            } else {
+                return Integer.compare(this.face, o.getFace());
+            }
+        }
+    }
+
+    public int getInversionNumber() {
+        if (isInversion) {
+            return RelativeMove.INVERTED;
+        } else {
+            return RelativeMove.NON_INVERTED;
+        }
     }
 }

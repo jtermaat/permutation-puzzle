@@ -1,9 +1,13 @@
-package model;
+package paths;
 
+import lombok.Data;
+import model.Move;
+import paths.MoveNode;
 import main.PuzzleSolver;
 
 import java.util.List;
 
+@Data
 public class Shortcut {
     private final MoveNode start;
     private final MoveNode end;

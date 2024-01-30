@@ -1,7 +1,9 @@
 package model;
 
+import paths.MoveNode;
 import lombok.Builder;
 import lombok.Data;
+import paths.Path;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,9 +24,10 @@ public class Puzzle {
     private final int numWildcards;
     private List<Path> paths;
     private MoveNode solution;
+    private int solutionLength;
 
     public int getSolutionLength() {
-        return solution.getLength();
+        return solutionLength;
     }
 
     public static Puzzle getFromString(String str) {
@@ -82,7 +85,10 @@ public class Puzzle {
             List<Puzzle> puzzleList = Arrays.stream(str.split("\n")).map(Puzzle::getFromString)
                     .filter(Objects::nonNull)
                     .toList();
-            puzzleList.forEach(p -> p.setSolution(MoveNode.fromList(idToMoveListMap.get(p.getId()))));
+            puzzleList.forEach(p -> {
+                p.setSolutionLength(idToMoveListMap.get(p.getId()).size());
+                p.setSolution(MoveNode.fromList(idToMoveListMap.get(p.getId())));
+            });
             puzzleList.forEach(p -> p.setPuzzleInfo(puzzleInfo));
             return puzzleList;
 

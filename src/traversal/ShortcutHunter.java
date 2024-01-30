@@ -1,13 +1,16 @@
 package traversal;
 
+import paths.Path;
+import paths.PathRadixTree;
 import model.*;
+import paths.Shortcut;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ShortcutHunter extends Permutation {
-    protected Map<Long, Map<Permutation, List<Path>>> pathMap;
+    protected Map<Long, PathRadixTree> pathMap;
     protected List<Shortcut> foundShortcuts;
     protected int maxDepth;
     protected List<Puzzle> puzzles;
@@ -16,7 +19,7 @@ public class ShortcutHunter extends Permutation {
     protected int moveIndex;
     protected Move[] allowedMoves;
 
-    public ShortcutHunter(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth, Map<Long, Map<Permutation, List<Path>>> pathMap) {
+    public ShortcutHunter(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth, Map<Long, PathRadixTree> pathMap) {
         super(puzzles.get(0).getInitialState());
         this.pathMap = pathMap;
         this.puzzles = puzzles;
@@ -39,10 +42,10 @@ public class ShortcutHunter extends Permutation {
         System.out.println("Found " + foundShortcuts.size() + " total shortcuts.");
 //        this.foundShortcuts.forEach(Shortcut::print);
 //        this.foundShortcuts.forEach(Shortcut::validate);
-        this.foundShortcuts.forEach(s -> {
-            s.print();
-            s.validate();
-        });
+//        this.foundShortcuts.forEach(s -> {
+//            s.print();
+//            s.validate();
+//        });
         System.out.println("activating shortcuts.");
         this.foundShortcuts.forEach(Shortcut::activate);
         System.out.println("shortcuts activated.");
@@ -87,46 +90,18 @@ public class ShortcutHunter extends Permutation {
     }
 
     protected void handleSaving() {
-        Map<Permutation, List<Path>> matches = pathMap.get(gameHash);
-        Path thisPath = new Path(positions, gameHash);
-        if (matches != null) {
-            for (Permutation permutation : matches.keySet()) {
-                boolean match = true;
-                for (int i = 0;i<permutation.getPositions().length;++i) {
-                    if (permutation.getPositions()[i] != this.positions[i]) {
-                        match = false;
-                        break;
-                    }
-                }
-                if (match) {
-//                    System.out.println("We have a match.");
-                    for (Path path : matches.get(permutation)) {
-                        boolean anotherMatch = true;
-                        for (int i = 0;i<path.getPositions().length;++i) {
-                            if (path.getPositions()[i] != this.positions[i]) {
-                                anotherMatch = false;
-                                break;
-                            }
-                        }
-                        if (anotherMatch) {
-                            System.out.println("Legit match found.");
-                            Shortcut newShortcut = new Shortcut(path.getStart(), path.getEnd(), getMoveList());
-                            System.out.println("Printing shortcut.");
-                            newShortcut.print();
-                            System.out.println("Validating shortcut.");
-                            newShortcut.validate();
-                            foundShortcuts.add(new Shortcut(path.getStart(), path.getEnd(), getMoveList()));
-                        } else {
-                            System.out.println("False match found.");
-                        }
-                    }
+        PathRadixTree pathTree = pathMap.get(gameHash);
+        if (pathTree != null) {
+            List<Path> paths = pathTree.get(positions);
+            if (paths != null) {
+                for (Path path : paths) {
+                    Shortcut shortcut = new Shortcut(path.getStart(), path.getEnd(), getMoveList());
+                    System.out.println("Found shortcut: ");
+                    shortcut.print();
+                    System.out.println();
+                    foundShortcuts.add(new Shortcut(path.getStart(), path.getEnd(), getMoveList()));
                 }
             }
-//            if (matches.containsKey(thisPath)) {
-//                for (Path path : matches.get(thisPath)) {
-//                    foundShortcuts.add(new Shortcut(path.getStart(), path.getEnd(), getMoveList()));
-//                }
-//            }
         }
     }
 

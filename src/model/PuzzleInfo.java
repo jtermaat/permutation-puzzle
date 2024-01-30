@@ -48,6 +48,10 @@ public class PuzzleInfo {
                             .build());
                     ++moveIdCount;
                 }
+                List<Character> allFaces = allowed.stream()
+                        .map(m -> m.getName().toCharArray()[0])
+                        .collect(Collectors.toSet()).stream().toList();
+                allowed.forEach(m -> m.setFaceData(allFaces));
                 List<Move> allowedMovesList = allowed.stream()
                         .flatMap(move -> {
                             Move inverse = move.createInverted(allowed.size());

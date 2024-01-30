@@ -1,6 +1,8 @@
 package traversal;
 
-import lombok.Data;
+import paths.MoveNode;
+import paths.Path;
+import paths.PathRadixTree;
 import model.*;
 
 import java.util.*;
@@ -8,8 +10,13 @@ import java.util.*;
 public class PathCollector extends Permutation {
     private Puzzle puzzle;
     private int maxDepth;
-    private final Map<Long, Map<Permutation, List<Path>>> pathMap;
-    public PathCollector(Puzzle puzzle, PuzzleInfo puzzleInfo, int maxDepth, Map<Long, Map<Permutation, List<Path>>> pathMap) {
+    private final Map<Long, PathRadixTree> pathMap;
+
+    private final static int MAX_LENGTH = 50; //Integer.MAX_VALUE; //Integer.MAX_VALUE;  //15;
+
+    private final static int MAX_COUNT = Integer.MAX_VALUE;
+
+    public PathCollector(Puzzle puzzle, PuzzleInfo puzzleInfo, int maxDepth, Map<Long, PathRadixTree> pathMap) {
         super(puzzle.getInitialState());
         this.puzzle = puzzle;
 //        this.allowedMoves = puzzleInfo.getAllowedMoves();
@@ -17,35 +24,31 @@ public class PathCollector extends Permutation {
         this.pathMap = pathMap;
     }
 
-    protected void resetPositions() {
-        for (short i = 0;i<positions.length;++i) {
-            positions[i] = i;
-        }
-    }
-
     public void collectPaths() {
         MoveNode firstNode = puzzle.getSolution();
-        while (firstNode != null) {
+        int pathCount = 0;
+        int count = 0;
+        while (firstNode != null && count < MAX_COUNT) {
+            ++count;
             this.resetPositions();
-            this.calculateGameHash();
             int length = 0;
             MoveNode secondNode = firstNode;
-            while (secondNode != null) {
+            while (secondNode != null && length < MAX_LENGTH) {
                 this.transform(secondNode.getMove());
                 secondNode = secondNode.getNext();
                 ++ length;
                 if (length > maxDepth) {
-                    short[] thesePositions = new short[positions.length];
-                    System.arraycopy(positions, 0, thesePositions, 0, positions.length);
-                    final Path path = new Path(firstNode, secondNode, thesePositions);
-                    pathMap.putIfAbsent(gameHash, new HashMap<>());
-                    final Map<Permutation, List<Path>> equalityMap = pathMap.get(gameHash);
-                    equalityMap.putIfAbsent(path, new ArrayList<>());
-                    equalityMap.get(path).add(path);
+                    ++pathCount;
+                    final Path path = new Path(firstNode, secondNode);
+                    if (pathMap.containsKey(gameHash)) {
+                        pathMap.get(gameHash).put(positions, path);
+                    } else {
+                        pathMap.put(gameHash, new PathRadixTree(positions, path));
+                    }
                 }
-
             }
             firstNode = firstNode.getNext();
         }
+        System.out.println("Gathered " + pathCount + " paths.");
     }
 }

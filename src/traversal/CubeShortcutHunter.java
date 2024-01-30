@@ -1,19 +1,27 @@
 package traversal;
 
-import model.Path;
-import model.Puzzle;
-import model.PuzzleInfo;
-import model.Shortcut;
+import paths.AbstractCycle;
+import paths.Cycle;
+import paths.PathRadixTree;
+import model.*;
+import paths.Shortcut;
 
-import java.util.List;
-import java.util.Map;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CubeShortcutHunter extends ShortcutHunter {
     private int secondToLastMove;
 
-    public CubeShortcutHunter(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth, Map<Long, Map<Permutation, List<Path>>> pathMap) {
+    private final String cycleFileName;
+
+    public CubeShortcutHunter(List<Puzzle> puzzles, PuzzleInfo puzzleInfo, int maxDepth, Map<Long, PathRadixTree> pathMap) {
         super(puzzles, puzzleInfo, maxDepth, pathMap);
+        this.cycleFileName = "/Users/johntermaat/Downloads/" + puzzleInfo.getPuzzleType().replaceAll("/", "-") + "-cycles.csv";
         secondToLastMove = -1;
     }
 
@@ -32,6 +40,8 @@ public class CubeShortcutHunter extends ShortcutHunter {
 //            s.print();
 //            s.validate();
 //        });
+        System.out.println("Saving cycles to " + cycleFileName);
+        saveCubeShortcutsToFile();
         System.out.println("activating shortcuts.");
         this.foundShortcuts.forEach(Shortcut::activate);
         System.out.println("shortcuts activated.");
@@ -69,5 +79,48 @@ public class CubeShortcutHunter extends ShortcutHunter {
             ++moveIndex;
         }
         return true;
+    }
+
+    public void saveCubeShortcutsToFile() {
+        List<Cycle> cycles = foundShortcuts.stream()
+                .map(Cycle::new)
+                .toList();
+        cycles.forEach(Cycle::cubeSortMoves);
+        cycles = Cycle.condense(cycles);
+        cycles.forEach(Cycle::runValidation);
+        cycles = new HashSet<>(cycles).stream()
+                .sorted()
+                .toList();
+        Move[][][] structuredMoves = RelativeMove.getStructuredMoveList(allowedMoves);
+        Map<AbstractCycle, Cycle> cycleMap = new HashSet<>(cycles).stream()
+                .filter(c -> !c.getMoves().isEmpty())
+                .collect(Collectors.toMap(c -> new AbstractCycle(c, structuredMoves), Function.identity()));
+        List<AbstractCycle> abstractCycles = cycleMap.keySet().stream()
+                .sorted()
+                .toList();
+        List<AbstractCycle> condensedList = new ArrayList<>();
+        AbstractCycle lastCycle = null;
+        for (AbstractCycle cycle : abstractCycles) {
+            if (!cycle.equals(lastCycle)) {
+                condensedList.add(cycle);
+                lastCycle = cycle;
+            }
+        }
+        abstractCycles = condensedList;
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(cycleFileName));
+            abstractCycles.forEach(c -> {
+                try {
+                    writer.write(c.toString());
+                    writer.write(cycleMap.get(c).toString());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            writer.close();
+        } catch (IOException ie) {
+            System.out.println("Error writing cycle file " + cycleFileName);
+            ie.printStackTrace();
+        }
     }
 }

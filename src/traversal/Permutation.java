@@ -15,10 +15,15 @@ public class Permutation implements Comparable<Permutation> {
 
     protected short[] positions;
     protected long gameHash;
-    private final static List<Long> powersOfTwo =  IntStream.range(0, 1000).boxed()
+    private final static List<Long> powersOfTwo =  IntStream.range(0, 10000).boxed()
             .map(i -> (long) Math.pow(2, i))
             .toList();
 
+
+    public Permutation(int length) {
+        this.positions = new short[length];
+        resetPositions();
+    }
 
     public Permutation(short[] positions) {
         this.positions = new short[positions.length];
@@ -81,6 +86,13 @@ public class Permutation implements Comparable<Permutation> {
             }
         }
         return true;
+    }
+
+    public void resetPositions() {
+        for (short i = 0;i<positions.length;++i) {
+            positions[i] = i;
+            calculateGameHash();
+        }
     }
 
     @Override
