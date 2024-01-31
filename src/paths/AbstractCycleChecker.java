@@ -4,7 +4,7 @@ import model.Puzzle;
 import java.util.*;
 
 public class AbstractCycleChecker {
-    private List<AbstractCubeCycle> cycles;
+    private final List<AbstractCubeCycle> cycles;
     MoveNode startNode;
     private String cycleFileName;
 
@@ -24,7 +24,9 @@ public class AbstractCycleChecker {
             node = node.getNext();
             Set<CycleTracer> nextTracers = new HashSet<>();
             for (CycleTracer tracer : tracers) {
-                nextTracers.add(tracer.processNext());
+                if (tracer != null) {
+                    nextTracers.add(tracer.processNext());
+                }
             }
             for (AbstractCubeCycle cycle : cycles) {
                 nextTracers.addAll(cycle.getCycleTracers(node, foundShortcuts));

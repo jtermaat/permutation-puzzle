@@ -135,15 +135,21 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
     }
 
     public List<Move> getShortcutFor(int startIndex, Move startMove, int length) {
-        Cycle cycle = getRelativeTo(startMove);
+        Cycle cycle = getRelativeTo(startMove, startIndex);
         return cycle.getMoves().subList(length, cycle.getMoves().size()).stream()
                 .map(Move::getInverse)
                 .toList();
     }
 
-    public List<CycleTracer> getCycleTracers(MoveNode node, List<Shortcut> foundShortcuts) {
+//    public List<CycleTracer> getCycleTracers(MoveNode node, List<Shortcut> foundShortcuts) {
+//        return IntStream.range(0, moves.size()).boxed()
+//                .map(i -> new CycleTracer(node, this, i, allowedMoves, foundShortcuts))
+//                .toList();
+//    }
+
+    public List<CycleTracer2> getCycleTracers(MoveNode node, List<Shortcut> foundShortcuts) {
         return IntStream.range(0, moves.size()).boxed()
-                .map(i -> new CycleTracer(node, this, i, allowedMoves, foundShortcuts))
+                .map(i -> new CycleTracer2(node, getRelativeTo(node.getMove(), i), foundShortcuts))
                 .toList();
     }
 

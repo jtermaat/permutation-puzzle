@@ -53,8 +53,8 @@ public class Move implements Comparable<Move> {
         this.face = allFaces.indexOf(name.charAt(0));
 
         this.number = name.length() == 1 ? 0 : Integer.parseInt(name.substring(1));
-        System.out.println("Face for " + name + " is " + this.face);
-        System.out.println("Number for " + name + " is " + this.number);
+//        System.out.println("Face for " + name + " is " + this.face);
+//        System.out.println("Number for " + name + " is " + this.number);
     }
 
     public void initSwaps() {

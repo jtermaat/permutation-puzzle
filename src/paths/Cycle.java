@@ -143,16 +143,20 @@ public class Cycle implements Comparable<Cycle> {
                 --backIndex;
             }
             for (int i = 0;i<=backIndex;++i) {
-                if (moves.get(i).getFace() == currentFace) {
-                    currentList.add(moves.get(i));
-                } else {
-                    currentList.sort(Comparator.comparing(Move::getInversionNumber));
-                    currentList.sort(Comparator.comparing(Move::getNumber));
-                    groupedList.add(currentList);
-                    currentFace = moves.get(i).getFace();
-                    currentList = new ArrayList<>();
-                    currentList.add(moves.get(i));
-                }
+//                try {
+                    if (moves.get(i).getFace() == currentFace) {
+                        currentList.add(moves.get(i));
+                    } else {
+                        currentList.sort(Comparator.comparing(Move::getInversionNumber));
+                        currentList.sort(Comparator.comparing(Move::getNumber));
+                        groupedList.add(currentList);
+                        currentFace = moves.get(i).getFace();
+                        currentList = new ArrayList<>();
+                        currentList.add(moves.get(i));
+                    }
+//                } catch (Exception e) {
+////                    e.printStackTrace();
+//                }
             }
             if (!currentList.isEmpty()) {
                 currentList.sort(Comparator.comparing(Move::getInversionNumber));

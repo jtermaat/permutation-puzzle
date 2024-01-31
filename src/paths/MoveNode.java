@@ -39,16 +39,20 @@ public class MoveNode {
 
     public void createChainTo(MoveNode end, List<Move> moves) {
         MoveNode startNode = backPointer;
-        if (startNode != null) {
-            MoveNode newNext = new MoveNode(moves.get(0));
-            MoveNode lastNode = newNext;
-            for (int i = 1; i < moves.size(); ++i) {
-                MoveNode newNode = new MoveNode(moves.get(i));
-                lastNode.addOption(newNode);
-                lastNode = newNode;
+        if (moves.isEmpty()) {
+            startNode.addOption(end);
+        } else {
+            if (startNode != null) {
+                MoveNode newNext = new MoveNode(moves.get(0));
+                MoveNode lastNode = newNext;
+                for (int i = 1; i < moves.size(); ++i) {
+                    MoveNode newNode = new MoveNode(moves.get(i));
+                    lastNode.addOption(newNode);
+                    lastNode = newNode;
+                }
+                lastNode.addOption(end);
+                startNode.addOption(newNext);
             }
-            lastNode.addOption(end);
-            startNode.addOption(newNext);
         }
     }
 
