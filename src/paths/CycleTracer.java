@@ -1,6 +1,7 @@
 package paths;
 
 import model.Move;
+import model.RelativeMove;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,12 +26,10 @@ public class CycleTracer {
     }
 
     public CycleTracer processNext() {
-        int faceChange = currentNode.getNext().getMove().getFace() - currentNode.getMove().getFace() % allowedMoves.length;
-        int numberChange = currentNode.getNext().getMove().getNumber() - currentNode.getMove().getNumber();
-        int inversionNumberChange = Math.abs(currentNode.getNext().getMove().getInversionNumber() - currentNode.getMove().getInversionNumber());
-        if (cycle.getMoves().get(cycleIndex).getNumberOffset() == numberChange
-                && cycle.getMoves().get(cycleIndex).getFaceOffset() == faceChange
-                && cycle.getMoves().get(cycleIndex).getInversionNumber() == inversionNumberChange) {
+        Move move1 = currentNode.getMove();
+        Move move2 = currentNode.getNext().getMove();
+        RelativeMove relativeMove = cycle.getMoves().get(cycleIndex);
+        if (relativeMove.matches(move1, move2, cycle.isInvertedFront())) {
             currentNode = currentNode.getNext();
             ++cycleIndex;
             cycleIndex = cycleIndex % cycle.getMoves().size();

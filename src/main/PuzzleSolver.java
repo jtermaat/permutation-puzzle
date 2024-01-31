@@ -12,7 +12,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class PuzzleSolver {
-    final static String PUZZLE_TYPE = "cube_3/3/3";
+//    final static String PUZZLE_TYPE = "cube_3/3/3";
+final static String PUZZLE_TYPE = "cube_2/2/2";
 //    final static String PUZZLE_TYPE = "globe_3/33";
 //    final static String PUZZLE_TYPE = "wreath_21/21";
 //    final static String PUZZLE_TYPE = "cube_10/10/10";
@@ -131,7 +132,7 @@ public class PuzzleSolver {
     }
 
     public static boolean validateEquality(List<Move> list1, List<Move> list2) {
-        System.out.println("Validating moveList equality.");
+//        System.out.println("Validating moveList equality.");
         if (list1.isEmpty() && list2.isEmpty()) {
             return true;
         }
@@ -155,9 +156,9 @@ public class PuzzleSolver {
             }
         }
         if (matches) {
-            System.out.println("These move lists match!!!");
+//            System.out.println("These move lists match!!!");
         } else {
-            System.out.println("These move lists don't match.");
+//            System.out.println("These move lists don't match.");
         }
         return matches;
     }

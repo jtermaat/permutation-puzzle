@@ -110,14 +110,15 @@ public class Move implements Comparable<Move> {
 
     @Override
     public String toString() {
-        String returnString = ("Move " + name + ": ");
-        for (int i = 0;i<newPositions.length;i++) {
-            returnString = returnString + newPositions[i];
-            if (i < newPositions.length - 1) {
-                returnString = returnString + ",";
-            }
-        }
-        return returnString;
+//        String returnString = ("Move " + name + ": ");
+//        for (int i = 0;i<newPositions.length;i++) {
+//            returnString = returnString + newPositions[i];
+//            if (i < newPositions.length - 1) {
+//                returnString = returnString + ",";
+//            }
+//        }
+//        return returnString;
+        return this.getName();
     }
 
     @Override

@@ -107,6 +107,21 @@ public class CubeShortcutHunter extends ShortcutHunter {
             }
         }
         abstractCycles = condensedList;
+        for (AbstractCycle cycle : abstractCycles) {
+            System.out.println("Examining cycle: " + cycle);
+            System.out.println("Example cycle : " + cycleMap.get(cycle));
+            Set<Move> startMoves = cycle.getValidStartMoves();
+            System.out.println("valid start moves for cycle: " + startMoves);
+
+            for (Move move: startMoves) {
+                System.out.println("Starting with " + move + ": " + cycle.getRelativeTo(move));
+            }
+            if (cycle.isValidForFittingMoves()) {
+                System.out.println("Valid cycle for those fitting moves.");
+            } else {
+                System.out.println("Invalid cycle!!");
+            }
+        }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(cycleFileName));
             abstractCycles.forEach(c -> {

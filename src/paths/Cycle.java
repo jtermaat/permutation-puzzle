@@ -43,18 +43,22 @@ public class Cycle implements Comparable<Cycle> {
     }
 
     private List<Cycle> splitIntoAllSubCycles() {
-        Set<Cycle> currentSet = new HashSet<>();
-        currentSet.add(this);
-        int lastSize = 0;
-        while (currentSet.size() != lastSize) {
-            Set<Cycle> newSet = new HashSet<>();
-            lastSize = currentSet.size();
-            for (Cycle cycle : currentSet) {
-                newSet.addAll(cycle.splitIntoSubCycles());
+        Set<Cycle> stillSplittingSet = new HashSet<>();
+        Set<Cycle> doneSet = new HashSet<>();
+        stillSplittingSet.add(this);
+        while (!stillSplittingSet.isEmpty()) {
+            Set<Cycle> newStillSplittingSet = new HashSet<>();
+            for (Cycle cycle : stillSplittingSet) {
+                List<Cycle> splitList = cycle.splitIntoSubCycles();
+                if (splitList.size() > 1) {
+                    newStillSplittingSet.addAll(splitList);
+                } else {
+                    doneSet.addAll(splitList);
+                }
             }
-            currentSet = newSet;
+            stillSplittingSet = newStillSplittingSet;
         }
-        return currentSet.stream().toList();
+        return doneSet.stream().toList();
     }
 
     private List<Cycle> splitIntoSubCycles() {
@@ -74,27 +78,28 @@ public class Cycle implements Comparable<Cycle> {
                     }
                 }
             }
-            int halfPoint = (int)(moves.size()/2.0);
-            for (int i = halfPoint+1;i<moves.size() + halfPoint;++i) {
-                testPermutation.resetPositions();
-                for (int j = i; j < moves.size() + halfPoint; ++j) {
-                    testPermutation.transform(moves.get(j%moves.size()));
-                    boolean matches = true;
-                    for (int k = 0;k<testPermutation.getPositions().length;++k) {
-                        matches = matches && testPermutation.getPositions()[k] == k;
-                    }
-                    if (matches && !(i == halfPoint && j+1 == moves.size() + halfPoint)) {
-                        return split(i, (j+1)%moves.size());
-                    }
-                }
-            }
+//            int halfPoint = (int)(moves.size()/2.0);
+//            for (int i = halfPoint+1;i<moves.size() + halfPoint;++i) {
+//                testPermutation.resetPositions();
+//                for (int j = i; j < moves.size() + halfPoint; ++j) {
+//                    testPermutation.transform(moves.get(j%moves.size()));
+//                    boolean matches = true;
+//                    for (int k = 0;k<testPermutation.getPositions().length;++k) {
+//                        matches = matches && testPermutation.getPositions()[k] == k;
+//                    }
+//                    if (matches && !(i == halfPoint && j+1 == moves.size() + halfPoint)) {
+//                        return split(i, (j+1)%moves.size());
+//                    }
+//                }
+//            }
         }
+        System.out.println("Nothing to split in this: " + this.toString());
         return Collections.singletonList(this);
     }
 
     public List<Cycle> split(int startIndex, int endIndex) {
-        System.out.println("Splitting.");
-        print();
+//        System.out.println("Splitting.");
+//        print();
         List<Move> moveList1 = moves.subList(startIndex, endIndex);
         List<Move> moveList2 = new ArrayList<>(moves.size() - moveList1.size());
         moveList2.addAll(moves.subList(endIndex, moves.size()));
@@ -126,8 +131,8 @@ public class Cycle implements Comparable<Cycle> {
     public void cubeSortMoves() {
         if (moves.size() > 1) {
 //            pivotToLowestComparisonScore();
-            System.out.println("Before cube sorting: ");
-            print();
+//            System.out.println("Before cube sorting: ");
+//            print();
             int currentFace = -1;
             List<List<Move>> groupedList = new ArrayList<>();
             List<Move> currentList = new ArrayList<>();
@@ -150,6 +155,7 @@ public class Cycle implements Comparable<Cycle> {
                 }
             }
             if (!currentList.isEmpty()) {
+                currentList.sort(Comparator.comparing(Move::getInversionNumber));
                 currentList.sort(Comparator.comparing(Move::getNumber));
                 groupedList.add(currentList);
             }
@@ -166,8 +172,8 @@ public class Cycle implements Comparable<Cycle> {
 //            }
 //            System.out.println("After cube sorting: ");
 //            print();
-            System.out.println();
-            System.out.println();
+//            System.out.println();
+//            System.out.println();
         }
     }
 
