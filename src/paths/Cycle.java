@@ -128,6 +128,56 @@ public class Cycle implements Comparable<Cycle> {
         return PuzzleSolver.validateEquality(moves, Collections.emptyList());
     }
 
+    public static List<Move> cubeSortMoves(List<Move> moves) {
+        if (moves.size() > 1) {
+//            pivotToLowestComparisonScore();
+//            System.out.println("Before cube sorting: ");
+//            print();
+            int currentFace = -1;
+            List<List<Move>> groupedList = new ArrayList<>();
+            List<Move> currentList = new ArrayList<>();
+            int backIndex = moves.size() - 1;
+            Move firstMove = moves.get(0);
+            while (backIndex >= 0 && moves.get(backIndex).getFace() == firstMove.getFace()) {
+                currentList.add(moves.get(backIndex));
+                --backIndex;
+            }
+            for (int i = 0;i<=backIndex;++i) {
+                if (moves.get(i).getFace() == currentFace) {
+                    currentList.add(moves.get(i));
+                } else {
+                    currentList.sort(Comparator.comparing(Move::getInversionNumber));
+                    currentList.sort(Comparator.comparing(Move::getNumber));
+                    groupedList.add(currentList);
+                    currentFace = moves.get(i).getFace();
+                    currentList = new ArrayList<>();
+                    currentList.add(moves.get(i));
+                }
+            }
+            if (!currentList.isEmpty()) {
+                currentList.sort(Comparator.comparing(Move::getInversionNumber));
+                currentList.sort(Comparator.comparing(Move::getNumber));
+                groupedList.add(currentList);
+            }
+            moves = new ArrayList<>();
+            for (List<Move> list : groupedList) {
+                moves.addAll(list);
+            }
+//            pivotToLowestComparisonScore();
+//            System.out.println("Validating...");
+//            if (isValid()) {
+//                System.out.println("Valid cycle! ");
+//            } else {
+//                System.out.println("NOT A VALID CYCLE");
+//            }
+//            System.out.println("After cube sorting: ");
+//            print();
+//            System.out.println();
+//            System.out.println();
+        }
+        return moves;
+    }
+
     public void cubeSortMoves() {
         if (moves.size() > 1) {
 //            pivotToLowestComparisonScore();

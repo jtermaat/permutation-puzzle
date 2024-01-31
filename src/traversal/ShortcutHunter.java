@@ -1,5 +1,6 @@
 package traversal;
 
+import lombok.Getter;
 import paths.Path;
 import paths.PathRadixTree;
 import model.*;
@@ -11,6 +12,8 @@ import java.util.stream.IntStream;
 
 public class ShortcutHunter extends Permutation {
     protected Map<Long, PathRadixTree> pathMap;
+
+    @Getter
     protected List<Shortcut> foundShortcuts;
     protected int maxDepth;
     protected List<Puzzle> puzzles;

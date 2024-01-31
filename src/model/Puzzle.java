@@ -1,5 +1,6 @@
 package model;
 
+import paths.Cycle;
 import paths.MoveNode;
 import lombok.Builder;
 import lombok.Data;
@@ -90,6 +91,7 @@ public class Puzzle {
                 p.setSolution(MoveNode.fromList(idToMoveListMap.get(p.getId())));
             });
             puzzleList.forEach(p -> p.setPuzzleInfo(puzzleInfo));
+            puzzleList.forEach(p -> p.set)
             return puzzleList;
 
         } catch (IOException ie) {
@@ -106,6 +108,9 @@ public class Puzzle {
         String[] parts = str.split("\\.");
         for (int i = 0;i<parts.length;++i) {
             moves.add(moveMap.get(parts[i]));
+        }
+        if (puzzleInfo.getPuzzleType().toUpperCase().contains("CUBE")) {
+            moves = Cycle.cubeSortMoves(moves);
         }
         return moves;
     }

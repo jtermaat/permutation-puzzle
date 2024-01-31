@@ -8,6 +8,7 @@ import model.Move;
 import model.RelativeCubeMove;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Data
 @Builder
@@ -137,6 +138,12 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
         Cycle cycle = getRelativeTo(startMove);
         return cycle.getMoves().subList(length, cycle.getMoves().size()).stream()
                 .map(Move::getInverse)
+                .toList();
+    }
+
+    public List<CycleTracer> getCycleTracers(MoveNode node, List<Shortcut> foundShortcuts) {
+        return IntStream.range(0, moves.size()).boxed()
+                .map(i -> new CycleTracer(node, this, i, allowedMoves, foundShortcuts))
                 .toList();
     }
 

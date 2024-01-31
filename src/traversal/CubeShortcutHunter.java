@@ -40,11 +40,12 @@ public class CubeShortcutHunter extends ShortcutHunter {
 //            s.print();
 //            s.validate();
 //        });
-        System.out.println("Saving cycles to " + cycleFileName);
-        saveCubeShortcutsToFile();
-        System.out.println("activating shortcuts.");
-        this.foundShortcuts.forEach(Shortcut::activate);
-        System.out.println("shortcuts activated.");
+//        System.out.println("Saving cycles to " + cycleFileName);
+//        saveCubeShortcutsToFile();
+//        System.out.println("activating shortcuts.");
+//        this.foundShortcuts.forEach(Shortcut::activate);
+//        System.out.println("shortcuts activated.");
+
     }
 
     @Override
