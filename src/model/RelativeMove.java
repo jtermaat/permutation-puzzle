@@ -40,13 +40,20 @@ public class RelativeMove implements Comparable<RelativeMove> {
 //        System.out.println("start dist from middle: " + startDistFromMiddle);
         double endDistFromMiddle = (double)move2.getNumber() - middle;
 //        System.out.println("end dist from middle: " + endDistFromMiddle);
-        if (endDistFromMiddle * startDistFromMiddle < 0) {
+        if (endDistFromMiddle * startDistFromMiddle == 0) {
+            this.oppositeNumber = endDistFromMiddle - startDistFromMiddle < 0;
+//            System.out.println("Setting opposite number to " + (endDistFromMiddle - startDistFromMiddle > 0));
+        } else if (endDistFromMiddle * startDistFromMiddle < 0) {
             this.oppositeNumber = true;
 //            System.out.println("Setting opposite number to true.");
         } else {
             this.oppositeNumber = false;
 //            System.out.println("Setting opposite number to false");
         }
+//        System.out.println("New shift: " + (int)(Math.abs(endDistFromMiddle) - Math.abs(startDistFromMiddle)));
+//        this.numberShiftFromMiddle = (int)(Math.abs(endDistFromMiddle) - Math.abs(startDistFromMiddle));
+
+
 //        System.out.println("New shift: " + (int)(Math.abs(endDistFromMiddle) - Math.abs(startDistFromMiddle)));
         this.numberShiftFromMiddle = (int)(Math.abs(endDistFromMiddle) - Math.abs(startDistFromMiddle));
     }
@@ -119,31 +126,61 @@ public class RelativeMove implements Comparable<RelativeMove> {
                 [Math.floorMod(move.getFace() - effectiveFaceOffset, allowedMoves.length)]
 //                [returnFace]
 //                    [getRelativeNumber(move.getNumber(), inversionOffset)]
-                [getRelativeNumber(move.getNumber()+numberShiftFromMiddle, effectiveOppositeNumber)]
+                [getRelativeNumber(move.getNumber(), effectiveOppositeNumber)]
                 [inversionOffset];
     }
 
+    private static boolean LOGGING_ON = true;
+
+//    protected int getOppositeNumberValue(int number) {
+//        double middle = ((double)allowedMoves[0].length -1.0) / 2.0;
+//        double dist = (double)number - middle;
+//        double newDist = number + dist;
+//    }
     protected int getRelativeNumber(int number, boolean opposite) {
-//        System.out.println("Getting relative number for " + number + " with opposite " + opposite + " and shift " + numberShiftFromMiddle);
-        double middle = ((double)allowedMoves[0].length-1.0) / 2.0;
-//        System.out.println("Middle: " + middle);
+        if (LOGGING_ON) {
+            System.out.println("Getting relative number for " + number + " with opposite " + opposite + " and shift " + numberShiftFromMiddle);
+        }
+        double middle;
+//        if (allowedMoves[0].length % 2 == 1) {
+//            middle = (double)allowedMoves[0].length / 2.0;
+//        }
+//        else {
+            middle = (((double) allowedMoves[0].length) - 1.0) / 2.0;
+//        }
+        if (LOGGING_ON) {
+            System.out.println("Middle: " + middle);
+        }
+//        number = Math.floorMod(number, (int)middle);
         double dist = number - middle;
+//        double dist = Math.abs(number - middle);
         double newDist = Math.abs(dist) + numberShiftFromMiddle;
-//        System.out.println("dist: " + dist);
-//        System.out.println("shift: " + numberShiftFromMiddle);
+        if (LOGGING_ON) {
+            System.out.println("dist: " + dist);
+            System.out.println("shift: " + numberShiftFromMiddle);
+            System.out.println("new dist : " + newDist);
+        }
         if (dist < 0) {
             opposite = !opposite;
         }
 
+        final int subtractionNumber = 0;
+        // final int subtractionNumber = 1;
+
         int newNumber = (int)(middle + newDist);
+//        System.out.println("New number: " + newNumber);
         if (opposite) {
-//            System.out.println("Returning " + (allowedMoves[0].length - 1 - newNumber));
-            return allowedMoves[0].length - 1 - newNumber;
+            if (LOGGING_ON) {
+                System.out.println("Returning " + Math.floorMod(allowedMoves[0].length - newNumber - 1, allowedMoves[0].length));
+            }
+            return Math.floorMod(allowedMoves[0].length - newNumber - 1, allowedMoves[0].length);
 //            System.out.println("returning " + -1 * newNumber);
 //            return -1 * newNumber;
         } else {
-//            System.out.println("returning " + newNumber);
-            return newNumber;
+            if (LOGGING_ON) {
+                System.out.println("returning " + Math.floorMod(newNumber, allowedMoves[0].length));
+            }
+            return Math.floorMod(newNumber, allowedMoves[0].length);
         }
     }
 

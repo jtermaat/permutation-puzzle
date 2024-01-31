@@ -52,6 +52,8 @@ public class AbstractCycle implements Comparable<AbstractCycle> {
                 moveList.add(lastMove);
             } catch (ArrayIndexOutOfBoundsException e) {
                 System.out.println("we got arrayIndex out of bounds trying to get cycle relative to " + startMove + " for " + this);
+                System.out.println("List so far: " + moveList);
+                System.out.println("Current relative move: " + relativeMove);
                 return null;
             }
 //            try {
