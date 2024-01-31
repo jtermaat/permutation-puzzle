@@ -12,7 +12,7 @@ public class PathCollector extends Permutation {
     private int maxDepth;
     private final Map<Long, PathRadixTree> pathMap;
 
-    private final static int MAX_LENGTH = 50; //Integer.MAX_VALUE; //Integer.MAX_VALUE;  //15;
+    private final static int MAX_LENGTH = 30; //Integer.MAX_VALUE; //Integer.MAX_VALUE;  //15;
 
     private final static int MAX_COUNT = Integer.MAX_VALUE;
 

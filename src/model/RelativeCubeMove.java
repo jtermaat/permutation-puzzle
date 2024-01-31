@@ -2,10 +2,8 @@ package model;
 
 import lombok.Data;
 
-import java.util.List;
-
 @Data
-public class RelativeMove implements Comparable<RelativeMove> {
+public class RelativeCubeMove implements Comparable<RelativeCubeMove> {
     private final int faceOffset;
     private final int numberShiftFromMiddle;
     private final boolean oppositeNumber;
@@ -29,36 +27,36 @@ public class RelativeMove implements Comparable<RelativeMove> {
         return returnVal;
     }
 
-    public RelativeMove(Move[][][] allowedMoves, Move move1, Move move2) {
+    public RelativeCubeMove(Move[][][] allowedMoves, Move move1, Move move2) {
         this.allowedMoves = allowedMoves;
         this.inversionNumber = Math.floorMod((move2.getInversionNumber() + move1.getInversionNumber()), 2);
         this.faceOffset = Math.floorMod((move2.getFace() - (move1.getFace())), allowedMoves.length);
-//        System.out.println("Making relative move from " + move1 + " and " + move2);
+        System.out.println("Making relative move from " + move1 + " and " + move2);
         double middle = ((double)allowedMoves[0].length-1.0) / 2.0;
-//        System.out.println("Middle: " + middle);
+        System.out.println("Middle: " + middle);
         double startDistFromMiddle = (double)move1.getNumber() - middle;
-//        System.out.println("start dist from middle: " + startDistFromMiddle);
+        System.out.println("start dist from middle: " + startDistFromMiddle);
         double endDistFromMiddle = (double)move2.getNumber() - middle;
-//        System.out.println("end dist from middle: " + endDistFromMiddle);
+        System.out.println("end dist from middle: " + endDistFromMiddle);
         if (endDistFromMiddle * startDistFromMiddle == 0) {
             this.oppositeNumber = endDistFromMiddle - startDistFromMiddle < 0;
-//            System.out.println("Setting opposite number to " + (endDistFromMiddle - startDistFromMiddle > 0));
+            System.out.println("Setting opposite number to " + (endDistFromMiddle - startDistFromMiddle < 0));
         } else if (endDistFromMiddle * startDistFromMiddle < 0) {
             this.oppositeNumber = true;
-//            System.out.println("Setting opposite number to true.");
+            System.out.println("Setting opposite number to true.");
         } else {
             this.oppositeNumber = false;
-//            System.out.println("Setting opposite number to false");
+            System.out.println("Setting opposite number to false");
         }
 //        System.out.println("New shift: " + (int)(Math.abs(endDistFromMiddle) - Math.abs(startDistFromMiddle)));
 //        this.numberShiftFromMiddle = (int)(Math.abs(endDistFromMiddle) - Math.abs(startDistFromMiddle));
 
 
-//        System.out.println("New shift: " + (int)(Math.abs(endDistFromMiddle) - Math.abs(startDistFromMiddle)));
+        System.out.println("New shift: " + (int)(Math.abs(endDistFromMiddle) - Math.abs(startDistFromMiddle)));
         this.numberShiftFromMiddle = (int)(Math.abs(endDistFromMiddle) - Math.abs(startDistFromMiddle));
     }
 
-    public RelativeMove(int faceOffset, int numberShift, boolean oppositeNumber, int inversionNumber, Move[][][] allowedMoves) {
+    public RelativeCubeMove(int faceOffset, int numberShift, boolean oppositeNumber, int inversionNumber, Move[][][] allowedMoves) {
         this.faceOffset = faceOffset;
         this.numberShiftFromMiddle = numberShift;
         this.oppositeNumber = oppositeNumber;
@@ -94,9 +92,14 @@ public class RelativeMove implements Comparable<RelativeMove> {
 //        if (!forward) {
 //            inversionOffset = Math.floorMod(inversionOffset + 1, 2);
 //        }
+        int shift = numberShiftFromMiddle;
 
+        boolean effectiveOppositeNumber = oppositeNumber;
         if (!forward) {
             effectiveFaceOffset = effectiveFaceOffset * -1;
+            shift = shift * -1;
+//            effectiveOppositeNumber = !effectiveOppositeNumber;
+//            effectiveFaceOffset = effectiveFaceOffset + 1;
         }
 //        if (inversionOffset > 0) {
 //            effectiveFaceOffset *= -1;
@@ -105,7 +108,6 @@ public class RelativeMove implements Comparable<RelativeMove> {
 //            inversionOffset = Math.floorMod(inversionOffset + 1, 2);
 ////            effectiveFaceOffset = effectiveFaceOffset * -1;
 //        }
-        boolean effectiveOppositeNumber = oppositeNumber;
 //        if (!forward) {
 //            effectiveOppositeNumber = !oppositeNumber;
 //        }
@@ -123,23 +125,24 @@ public class RelativeMove implements Comparable<RelativeMove> {
 //                : Math.floorMod(move.getFace() + effectiveFaceOffset, allowedMoves.length);
 
         return allowedMoves
-                [Math.floorMod(move.getFace() - effectiveFaceOffset, allowedMoves.length)]
+                [Math.floorMod(move.getFace() + effectiveFaceOffset, allowedMoves.length)]
 //                [returnFace]
 //                    [getRelativeNumber(move.getNumber(), inversionOffset)]
-                [getRelativeNumber(move.getNumber(), effectiveOppositeNumber)]
+                [getRelativeNumber(move.getNumber(), effectiveOppositeNumber, shift)]
                 [inversionOffset];
     }
 
-    private static boolean LOGGING_ON = true;
+//    private static boolean LOGGING_ON = true;
+    private static boolean LOGGING_ON = false;
 
 //    protected int getOppositeNumberValue(int number) {
 //        double middle = ((double)allowedMoves[0].length -1.0) / 2.0;
 //        double dist = (double)number - middle;
 //        double newDist = number + dist;
 //    }
-    protected int getRelativeNumber(int number, boolean opposite) {
+    protected int getRelativeNumber(int number, boolean opposite, int shift) {
         if (LOGGING_ON) {
-            System.out.println("Getting relative number for " + number + " with opposite " + opposite + " and shift " + numberShiftFromMiddle);
+            System.out.println("Getting relative number for " + number + " with opposite " + opposite + " and shift " + shift);
         }
         double middle;
 //        if (allowedMoves[0].length % 2 == 1) {
@@ -154,10 +157,10 @@ public class RelativeMove implements Comparable<RelativeMove> {
 //        number = Math.floorMod(number, (int)middle);
         double dist = number - middle;
 //        double dist = Math.abs(number - middle);
-        double newDist = Math.abs(dist) + numberShiftFromMiddle;
+        double newDist = Math.abs(dist) + shift;
         if (LOGGING_ON) {
             System.out.println("dist: " + dist);
-            System.out.println("shift: " + numberShiftFromMiddle);
+            System.out.println("shift: " + shift);
             System.out.println("new dist : " + newDist);
         }
         if (dist < 0) {
@@ -193,7 +196,7 @@ public class RelativeMove implements Comparable<RelativeMove> {
         if (o == null || o.getClass() != this.getClass()) {
             return false;
         }
-        RelativeMove otherMove = (RelativeMove)o;
+        RelativeCubeMove otherMove = (RelativeCubeMove)o;
         if (faceOffset != otherMove.getFaceOffset()) {
             return false;
         }
@@ -210,7 +213,7 @@ public class RelativeMove implements Comparable<RelativeMove> {
     }
 
     @Override
-    public int compareTo(RelativeMove o) {
+    public int compareTo(RelativeCubeMove o) {
         if (faceOffset == o.getFaceOffset()) {
             if (numberShiftFromMiddle == o.getNumberShiftFromMiddle()) {
                 if (oppositeNumber == o.isOppositeNumber()) {

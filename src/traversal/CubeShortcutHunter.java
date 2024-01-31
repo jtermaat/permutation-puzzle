@@ -1,6 +1,6 @@
 package traversal;
 
-import paths.AbstractCycle;
+import paths.AbstractCubeCycle;
 import paths.Cycle;
 import paths.PathRadixTree;
 import model.*;
@@ -91,23 +91,35 @@ public class CubeShortcutHunter extends ShortcutHunter {
         cycles = new HashSet<>(cycles).stream()
                 .sorted()
                 .toList();
-        Move[][][] structuredMoves = RelativeMove.getStructuredMoveList(allowedMoves);
-        Map<AbstractCycle, Cycle> cycleMap = new HashSet<>(cycles).stream()
+        Move[][][] structuredMoves = RelativeCubeMove.getStructuredMoveList(allowedMoves);
+        Map<AbstractCubeCycle, Cycle> cycleMap = new HashSet<>(cycles).stream()
                 .filter(c -> !c.getMoves().isEmpty())
-                .collect(Collectors.toMap(c -> new AbstractCycle(c, structuredMoves), Function.identity()));
-        List<AbstractCycle> abstractCycles = cycleMap.keySet().stream()
+                .collect(Collectors.toMap(c -> new AbstractCubeCycle(c, structuredMoves), Function.identity()));
+        List<AbstractCubeCycle> abstractCycles = cycleMap.keySet().stream()
                 .sorted()
                 .toList();
-        List<AbstractCycle> condensedList = new ArrayList<>();
-        AbstractCycle lastCycle = null;
-        for (AbstractCycle cycle : abstractCycles) {
-            if (!cycle.equals(lastCycle)) {
-                condensedList.add(cycle);
-                lastCycle = cycle;
+        List<AbstractCubeCycle> condensedList = new ArrayList<>();
+        for (int i = 0;i<abstractCycles.size();++i) {
+            boolean include = true;
+            for (int j = i+1;j<abstractCycles.size();++j) {
+                if (abstractCycles.get(j).equals(abstractCycles.get(i))) {
+                    include = false;
+                    continue;
+                }
+            }
+            if (include) {
+                condensedList.add(abstractCycles.get(i));
             }
         }
+//        AbstractCycle lastCycle = null;
+//        for (AbstractCycle cycle : abstractCycles) {
+//            if (!cycle.equals(lastCycle)) {
+//                condensedList.add(cycle);
+//                lastCycle = cycle;
+//            }
+//        }
         abstractCycles = condensedList;
-        for (AbstractCycle cycle : abstractCycles) {
+        for (AbstractCubeCycle cycle : abstractCycles) {
             System.out.println("Examining cycle: " + cycle);
             System.out.println("Example cycle : " + cycleMap.get(cycle));
             Set<Move> startMoves = cycle.getValidStartMoves();

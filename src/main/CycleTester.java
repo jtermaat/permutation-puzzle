@@ -3,8 +3,8 @@ package main;
 import model.Move;
 import model.Puzzle;
 import model.PuzzleInfo;
-import model.RelativeMove;
-import paths.AbstractCycle;
+import model.RelativeCubeMove;
+import paths.AbstractCubeCycle;
 import paths.Cycle;
 import traversal.Permutation;
 
@@ -50,12 +50,12 @@ public class CycleTester {
         for (String test : testStrings) {
 
             Permutation testPermutation = new Permutation();
-            Move[][][] moves = RelativeMove.getStructuredMoveList(puzzleInfoToUse.getAllowedMoves());
+            Move[][][] moves = RelativeCubeMove.getStructuredMoveList(puzzleInfoToUse.getAllowedMoves());
 
             Cycle testCycle = new Cycle(test, Arrays.asList(puzzleInfoToUse.getAllowedMoves()));
             System.out.println("Starting with " + testCycle);
             System.out.println("Is it valid? " + testCycle.isValid());
-            AbstractCycle abstractCycle = new AbstractCycle(testCycle, moves);
+            AbstractCubeCycle abstractCycle = new AbstractCubeCycle(testCycle, moves);
             Set<Move> validStartMoves = abstractCycle.getValidStartMoves();
             System.out.println("Valid start moves: " + validStartMoves);
         }

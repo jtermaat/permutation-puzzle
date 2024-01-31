@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 public class PuzzleSolver {
 //    final static String PUZZLE_TYPE = "cube_2/2/2";
-    final static String PUZZLE_TYPE = "cube_3/3/3";
-//final static String PUZZLE_TYPE = "cube_4/4/4";
+//    final static String PUZZLE_TYPE = "cube_3/3/3";
+final static String PUZZLE_TYPE = "cube_8/8/8";
 //    final static String PUZZLE_TYPE = "globe_3/33";
 //    final static String PUZZLE_TYPE = "wreath_21/21";
 //    final static String PUZZLE_TYPE = "cube_10/10/10";

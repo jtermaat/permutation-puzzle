@@ -138,9 +138,9 @@ public class Move implements Comparable<Move> {
 
     public int getInversionNumber() {
         if (isInversion) {
-            return RelativeMove.INVERTED;
+            return RelativeCubeMove.INVERTED;
         } else {
-            return RelativeMove.NON_INVERTED;
+            return RelativeCubeMove.NON_INVERTED;
         }
     }
 }
