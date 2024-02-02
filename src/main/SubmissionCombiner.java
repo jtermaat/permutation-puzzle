@@ -14,8 +14,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SubmissionCombiner {
-    final static String IMPROVED_FILE = "/Users/johntermaat/Downloads/submission-globe_6-8.csv";
-    final static String MAIN_FILE = "/Users/johntermaat/Downloads/submission.csv";
+    final static String IMPROVED_FILE = "/Users/johntermaat/Downloads/submission-wreath_100-100.csv";
+    final static String MAIN_FILE = "/Users/johntermaat/Downloads/submission1.csv";
     final static String OUTPUT_FILE = "/Users/johntermaat/Downloads/submission.csv";
 
     public static void main(String[] args) {

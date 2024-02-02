@@ -3,22 +3,20 @@ package main;
 import model.Move;
 import model.Puzzle;
 import model.PuzzleInfo;
-import model.RelativeCubeMove;
-import paths.AbstractCubeCycle;
-import paths.Cycle;
-import traversal.Permutation;
+import abstraction.RelativeCubeMove;
+import abstraction.AbstractCubeCycle;
+import abstraction.Cycle;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CycleTester {
 
 //    final static String PUZZLE_TYPE = "cube_3/3/3";
-    final static String PUZZLE_TYPE = "cube_2/2/2";
+    final static String PUZZLE_TYPE = "cube_33/33/33"; //"cube_6/6/6";
 
     final static int MAX_DEPTH = 3;
     final static boolean IS_CUBE = true;
@@ -44,20 +42,51 @@ public class CycleTester {
 //        String testString = "-r0.-r1.-r2.-f2.r0.r1.r2.-d0";
 //        String testString = "-r0.-r1.-f1.r0.r1.-d0";
 //        String testString2 = "f0.f1.-d0.-f0.-f1.r0";
-        String testString2 = "r0.-r1.f0.f1.-d1.-d1.-d1.-r0.-r1.-f0.r1.d1.d1.d1.-f0.-f1.-r0.f0";
-        List<String> testStrings = Arrays.asList(testString2);
+//        String testString2 = "r0.-r1.f0.f1.-d1.-d1.-d1.-r0.-r1.-f0.r1.d1.d1.d1.-f0.-f1.-r0.f0";
+        String testString = "(1.2.0.1),(2.-2.0.0),(1.2.1.0),(2.-2.1.1),(1.2.0.0),(2.-2.0.1),(1.2.1.1),(2.-2.1.0)";
+        String testString2 = "(2.-1.1.0),(1.1.1.1),(2.-1.0.0),(1.1.0.1),(2.-1.1.1),(1.1.1.0),(2.-1.0.1),(1.1.0.0)";
+        String testString3 = "(2.-1.1.0),(1.1.1.1),(2.-1.0.1),(1.1.0.0),(2.-1.1.1),(1.1.1.0),(2.-1.0.0),(1.1.0.1)";
+        String testString4 = "(2.2.1.1),(1.-2.1.0),(2.0.0.0),(1.0.0.1),(2.2.1.0),(1.-2.1.1),(2.0.0.1),(1.0.0.0)";
+        String testString5 = "(2.2.1.1),(1.-2.1.0),(2.0.0.1),(1.0.0.0),(2.2.1.0),(1.-2.1.1),(2.0.0.0),(1.0.0.1)";
+
+        List<String> testStrings = Arrays.asList(testString, testString2, testString3, testString4, testString5);
+        testStrings = Arrays.asList("(2.1.1.1),(1.-1.1.0),(2.0.1.1),(1.0.1.0),(2.1.1.0),(1.-1.1.1),(2.0.1.0),(1.0.1.1)");
 
         for (String test : testStrings) {
 
-            Permutation testPermutation = new Permutation();
-            Move[][][] moves = RelativeCubeMove.getStructuredMoveList(puzzleInfoToUse.getAllowedMoves());
 
-            Cycle testCycle = new Cycle(test, Arrays.asList(puzzleInfoToUse.getAllowedMoves()));
-            System.out.println("Starting with " + testCycle);
-            System.out.println("Is it valid? " + testCycle.isValid());
-            AbstractCubeCycle abstractCycle = new AbstractCubeCycle(testCycle, moves);
-            Set<Move> validStartMoves = abstractCycle.getValidStartMoves();
-            System.out.println("Valid start moves: " + validStartMoves);
+
+//            Permutation testPermutation = new Permutation();
+            Move[][][] moves = RelativeCubeMove.getStructuredMoveList(puzzleInfoToUse.getAllowedMoves());
+//            try {
+//                Thread.sleep(2000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+            AbstractCubeCycle cycle = new AbstractCubeCycle(test, moves);
+            System.out.println("Analyzing " + cycle);
+            System.out.println("Inspecting concrete forms.");
+            List<Cycle> concreteCycles = cycle.getValidStartMoves().stream()
+                    .map(cycle::getRelativeTo).toList();
+            System.out.println(concreteCycles.size() + " concrete forms for " + puzzleInfoToUse.getPuzzleType());
+            for (Cycle concrete : concreteCycles) {
+                System.out.println(concrete);
+                if (!concrete.isValid()) {
+                    System.out.println("INVALID!!!");
+                }
+            }
+
+//            System.out.println("Done with " + )
+
+
+//            Cycle testCycle = new Cycle(test, Arrays.asList(puzzleInfoToUse.getAllowedMoves()));
+
+//            AbstractCubeCycle abstractCycle = new AbstractCubeCycle(testCycle, moves);
+//            System.out.println("Abstract cycle: " + abstractCycle);
+//            System.out.println("Equivalent cycles: ");
+//            abstractCycle.printEquivalentCycles();
+//            Set<Move> validStartMoves = abstractCycle.getValidStartMoves();
+//            System.out.println("Valid start moves: " + validStartMoves);
         }
     }
 }

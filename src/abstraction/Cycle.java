@@ -1,16 +1,15 @@
-package paths;
+package abstraction;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import main.PuzzleSolver;
 import model.Move;
+import paths.Shortcut;
 import traversal.Permutation;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Data
 @Builder
@@ -93,7 +92,7 @@ public class Cycle implements Comparable<Cycle> {
 //                }
 //            }
         }
-        System.out.println("Nothing to split in this: " + this.toString());
+//        System.out.println("Nothing to split in this: " + this.toString());
         return Collections.singletonList(this);
     }
 
@@ -108,7 +107,7 @@ public class Cycle implements Comparable<Cycle> {
         newCycle1.cubeSortMoves();
         Cycle newCycle2 = new Cycle(moveList2);
         newCycle2.cubeSortMoves();
-        System.out.println("Split into " + newCycle1 + " and " + newCycle2);
+//        System.out.println("Split into " + newCycle1 + " and " + newCycle2);
         return Arrays.asList(newCycle1, newCycle2);
     }
 
@@ -136,13 +135,13 @@ public class Cycle implements Comparable<Cycle> {
             int currentFace = -1;
             List<List<Move>> groupedList = new ArrayList<>();
             List<Move> currentList = new ArrayList<>();
-            int backIndex = moves.size() - 1;
-            Move firstMove = moves.get(0);
-            while (backIndex >= 0 && moves.get(backIndex).getFace() == firstMove.getFace()) {
-                currentList.add(moves.get(backIndex));
-                --backIndex;
-            }
-            for (int i = 0;i<=backIndex;++i) {
+//            int backIndex = moves.size() - 1;
+//            Move firstMove = moves.get(0);
+//            while (backIndex >= 0 && moves.get(backIndex).getFace() == firstMove.getFace()) {
+//                currentList.add(moves.get(backIndex));
+//                --backIndex;
+//            }
+            for (int i = 0;i<moves.size();++i) {
 //                try {
                     if (moves.get(i).getFace() == currentFace) {
                         currentList.add(moves.get(i));

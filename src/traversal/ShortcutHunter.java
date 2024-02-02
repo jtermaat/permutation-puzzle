@@ -43,12 +43,6 @@ public class ShortcutHunter extends Permutation {
                 .flatMap(h -> h.foundShortcuts.stream())
                 .toList();
         System.out.println("Found " + foundShortcuts.size() + " total shortcuts.");
-//        this.foundShortcuts.forEach(Shortcut::print);
-//        this.foundShortcuts.forEach(Shortcut::validate);
-//        this.foundShortcuts.forEach(s -> {
-//            s.print();
-//            s.validate();
-//        });
         System.out.println("activating shortcuts.");
         this.foundShortcuts.forEach(Shortcut::activate);
         System.out.println("shortcuts activated.");
@@ -63,6 +57,7 @@ public class ShortcutHunter extends Permutation {
             while (performStep());
             this.transform(allowedMoves[moveIndexes.pop()].getInverse());
         }
+        System.out.println("Done with search " + index);
         return this;
     }
 
@@ -98,11 +93,9 @@ public class ShortcutHunter extends Permutation {
             List<Path> paths = pathTree.get(positions);
             if (paths != null) {
                 for (Path path : paths) {
-                    Shortcut shortcut = new Shortcut(path.getStart(), path.getEnd(), getMoveList());
-                    System.out.println("Found shortcut: ");
+                    Shortcut shortcut = new Shortcut(path.getStart(), path.getEnd(), getMoveList(), null);
                     shortcut.print();
-                    System.out.println();
-                    foundShortcuts.add(new Shortcut(path.getStart(), path.getEnd(), getMoveList()));
+                    foundShortcuts.add(shortcut);
                 }
             }
         }

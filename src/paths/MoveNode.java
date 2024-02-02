@@ -38,20 +38,22 @@ public class MoveNode {
     }
 
     public void createChainTo(MoveNode end, List<Move> moves) {
-        MoveNode startNode = backPointer;
-        if (moves.isEmpty()) {
-            startNode.addOption(end);
-        } else {
-            if (startNode != null) {
-                MoveNode newNext = new MoveNode(moves.get(0));
-                MoveNode lastNode = newNext;
-                for (int i = 1; i < moves.size(); ++i) {
-                    MoveNode newNode = new MoveNode(moves.get(i));
-                    lastNode.addOption(newNode);
-                    lastNode = newNode;
+        if (backPointer != null) {
+            MoveNode startNode = backPointer;
+            if (moves.isEmpty()) {
+                startNode.addOption(end);
+            } else {
+                if (startNode != null) {
+                    MoveNode newNext = new MoveNode(moves.get(0));
+                    MoveNode lastNode = newNext;
+                    for (int i = 1; i < moves.size(); ++i) {
+                        MoveNode newNode = new MoveNode(moves.get(i));
+                        lastNode.addOption(newNode);
+                        lastNode = newNode;
+                    }
+                    lastNode.addOption(end);
+                    startNode.addOption(newNext);
                 }
-                lastNode.addOption(end);
-                startNode.addOption(newNext);
             }
         }
     }
@@ -123,9 +125,11 @@ public class MoveNode {
             }
             Set<MoveNode> allNextOptions = node.getOptions();
             for (MoveNode option : allNextOptions) {
-                if (option.getBackPointer() == null) {
-                    option.setBackPointer(node);
-                    nodeQueue.offer(option);
+                if (option != null) {
+                    if (option.getBackPointer() == null) {
+                        option.setBackPointer(node);
+                        nodeQueue.offer(option);
+                    }
                 }
             }
         }

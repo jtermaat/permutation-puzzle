@@ -1,14 +1,14 @@
-package paths;
+package abstraction;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import main.PuzzleSolver;
 import model.Move;
-import model.RelativeCubeMove;
+import paths.MoveNode;
+import paths.Shortcut;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 @Data
 @Builder
@@ -17,16 +17,30 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
     private List<RelativeCubeMove> moves;
     List<Set<Move>> validStartMovesFromIndex;
     private Move[][][] allowedMoves;
-    private boolean invertedFront;
-    private boolean invertedBack;
+    private boolean forward;
+    private boolean inverseForward;
+
+    public AbstractCubeCycle(String string, Move[][][] allowedMoves) {
+        this.allowedMoves = allowedMoves;
+        String[] moveStrings = string.split(",");
+        moves = new ArrayList<>(moveStrings.length);
+        for (String str : moveStrings) {
+            moves.add(new RelativeCubeMove(str, allowedMoves));
+        }
+        if (!moves.isEmpty()) {
+            forward = moves.get(0).getInversionNumber() <= 0;
+            inverseForward = moves.get(moves.size()-1).getInversionNumber() <= 0;
+            initValidStartMoves();
+        }
+    }
 
     public AbstractCubeCycle(Cycle cycle, Move[][][] allowedMoves) {
         this.allowedMoves = allowedMoves;
         if (cycle == null || cycle.getMoves() == null || cycle.getMoves().isEmpty()) {
             moves = Collections.emptyList();
         } else {
-            invertedFront = !cycle.getMoves().get(0).isInversion();
-            invertedBack = !cycle.getMoves().get(cycle.getMoves().size()-1).isInversion();
+            forward = !cycle.getMoves().get(0).isInversion();
+            inverseForward = !cycle.getMoves().get(cycle.getMoves().size()-1).isInversion();
             moves = new ArrayList<>(cycle.getMoves().size());
             for (int i = 0; i < cycle.getMoves().size(); ++i) {
                 int lastIndex = Math.floorMod((i-1),cycle.getMoves().size());
@@ -53,10 +67,10 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
 
 //            RelativeMove relativeMove = forward == !startMove.isInversion() ? moves.get(i) : moves.get(moves.size() - i);
 //            RelativeMove relativeMove = (!forward)^startMove.isInversion() ?  moves.get(moves.size() - i) : moves.get(i);
-            RelativeCubeMove relativeMove = invertedFront^startMove.isInversion() ? moves.get(Math.floorMod(i, moves.size())) : moves.get(Math.floorMod(moves.size() - (i-1), moves.size()));
+            RelativeCubeMove relativeMove = forward ^startMove.isInversion() ? moves.get(Math.floorMod(i, moves.size())) : moves.get(Math.floorMod(moves.size() - (i-1), moves.size()));
 //            RelativeMove relativeMove = moves.get(i);
             try {
-                lastMove = relativeMove.getRelativeTo(lastMove, invertedFront^startMove.isInversion());
+                lastMove = relativeMove.getRelativeTo(lastMove, forward ^startMove.isInversion());
                 moveList.add(lastMove);
             } catch (ArrayIndexOutOfBoundsException e) {
                 System.out.println("we got arrayIndex out of bounds trying to get cycle relative to " + startMove + " for " + this);
@@ -76,19 +90,25 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
         return new Cycle(moveList);
     }
 
+    public void printEquivalentCycles() {
+        for (Move move : getValidStartMoves()) {
+            System.out.println(getRelativeTo(move));
+        }
+    }
+
     public void initValidStartMoves() {
         validStartMovesFromIndex = new ArrayList<>(moves.size());
         for (int i = 0;i<moves.size();++i) {
             Set<Move> validMoves = new HashSet<>();
-            for (Move[][] allowedMove : allowedMoves) {
-                for (Move[] value : allowedMove) {
-                    for (Move move : value) {
-                        Cycle cycle = getRelativeTo(move, i);
+            for (int j = 0;j<allowedMoves.length;++j) {
+                for (int k = 0;k<allowedMoves[j].length;++k) {
+                    for (int l = 0;l<allowedMoves[j][k].length;++l) {
+                        Cycle cycle = getRelativeTo(allowedMoves[j][k][l], i);
                         if (cycle != null) {
-                            if (PuzzleSolver.validateEquality(getRelativeTo(move, i).getMoves(), Collections.emptyList())) {
-                                validMoves.add(move);
+                            if (PuzzleSolver.validateEquality(getRelativeTo(allowedMoves[j][k][l], i).getMoves(), Collections.emptyList())) {
+                                validMoves.add(allowedMoves[j][k][l]);
                             } else {
-                                System.out.println("Starting with " + move + " we get FAILED " + getRelativeTo(move));
+//                                System.out.println("Starting with " + allowedMoves[j][k][l] + " we get FAILED " + getRelativeTo(allowedMoves[j][k][l]));
                             }
                         }
                     }
@@ -108,7 +128,7 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
                         if (PuzzleSolver.validateEquality(getRelativeTo(move).getMoves(), Collections.emptyList())) {
                             validMoves.add(move);
                         } else {
-                            System.out.println("Starting with " + move + " we get FAILED " + getRelativeTo(move));
+//                            System.out.println("Starting with " + move + " we get FAILED " + getRelativeTo(move));
                         }
                     }
                 }
@@ -124,7 +144,7 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
                     Cycle cycle = getRelativeTo(move);
                     if (cycle != null) {
                         if (!PuzzleSolver.validateEquality(getRelativeTo(move).getMoves(), Collections.emptyList())) {
-                            System.out.println("Cycle " + toString() + " is INVALID for starting move " + move);
+//                            System.out.println("Cycle " + toString() + " is INVALID for starting move " + move);
                             return false;
                         }
                     }
@@ -148,9 +168,13 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
 //    }
 
     public List<CycleTracer2> getCycleTracers(MoveNode node, List<Shortcut> foundShortcuts) {
-        return IntStream.range(0, moves.size()).boxed()
-                .map(i -> new CycleTracer2(node, getRelativeTo(node.getMove(), i), foundShortcuts))
-                .toList();
+        List<CycleTracer2> tracers = new ArrayList<>();
+        for (int i = 0;i<moves.size();++i) {
+            if (this.validStartMovesFromIndex.get(i).contains(node.getMove())) {
+                tracers.add(new CycleTracer2(node, getRelativeTo(node.getMove(), i), foundShortcuts, this));
+            }
+        }
+        return tracers;
     }
 
     @Override
@@ -179,9 +203,10 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
             return false;
         }
 //        System.out.println("Testing equality of " );
-        System.out.println(this.toString());
-        System.out.println(other.toString());
-        System.out.println();
+//        System.out.println(this.toString());
+//        System.out.println(other.toString());
+//        System.out.println();
+
         for (int i = 0;i<moves.size();++i) {
             if (matchesStartingAtIndex(otherCycle, i)) {
 //                System.out.println("They match with index " + i + "!");

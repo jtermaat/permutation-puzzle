@@ -14,21 +14,22 @@ import java.util.stream.Collectors;
 public class PuzzleSolver {
 //    final static String PUZZLE_TYPE = "cube_2/2/2";
 //    final static String PUZZLE_TYPE = "cube_3/3/3";
-final static String PUZZLE_TYPE = "cube_2/2/2";
-//    final static String PUZZLE_TYPE = "globe_3/33";
-//    final static String PUZZLE_TYPE = "wreath_21/21";
+//final static String PUZZLE_TYPE = "cube_2/2/2";
+//    final static String PUZZLE_TYPE = "globe_3/4";
+    final static String PUZZLE_TYPE = "wreath_33/33";
 //    final static String PUZZLE_TYPE = "cube_10/10/10";
-    final static int MAX_DEPTH = 3;
+    final static int MAX_DEPTH = 15;
 
-    final static boolean IS_CUBE = true;
+    final static boolean IS_CUBE = false;
 
     public static void main(String[] args) {
         String puzzlesFilename = "/Users/johntermaat/Downloads/puzzles.csv";
         String puzzleInfosFilename = "/Users/johntermaat/Downloads/puzzle_info.csv";
         String solutionFilename = "/Users/johntermaat/Downloads/submission-" + PUZZLE_TYPE.replaceAll("/", "-") + ".csv";
 //        String existingSolutionFilename = "/Users/johntermaat/Downloads/submission-existing.csv";
-//        String existingSolutionFilename = "/Users/johntermaat/Downloads/submission.csv";
-        String existingSolutionFilename = "/Users/johntermaat/Downloads/sample_submission.csv";
+        String existingSolutionFilename = "/Users/johntermaat/Downloads/submission1.csv";
+//        existingSolutionFilename = solutionFilename;
+//        String existingSolutionFilename = "/Users/johntermaat/Downloads/sample_submission.csv";
 
         Map<String, PuzzleInfo> puzzleInfoMap = PuzzleInfo.readPuzzleInfoList(puzzleInfosFilename).stream()
                 .collect(Collectors.toMap(PuzzleInfo::getPuzzleType, Function.identity()));
@@ -97,7 +98,7 @@ final static String PUZZLE_TYPE = "cube_2/2/2";
                         sb.append(".").append(allMoves.get(j).getName());
                     }
                     sb.append("\n");
-                    System.out.println("For target " + i + ", writing: " + sb.toString());
+//                    System.out.println("For target " + i + ", writing: " + sb.toString());
                     writer.write(sb.toString());
                 }
             }

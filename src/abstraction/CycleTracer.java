@@ -1,7 +1,8 @@
-package paths;
+package abstraction;
 
 import model.Move;
-import model.RelativeCubeMove;
+import paths.MoveNode;
+import paths.Shortcut;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +47,7 @@ public class CycleTracer {
             cycleIndex += increment;
 //            cycleIndex = Math.floorMod(cycleIndex, cycle.getMoves().size()); // % cycle.getMoves().size();
             if (Math.floorMod(cycleIndex, cycle.getMoves().size()) == cycleStartIndex) {
-                foundShortcuts.add(new Shortcut(startNode, currentNode, Collections.emptyList()));
+                foundShortcuts.add(new Shortcut(startNode, currentNode, Collections.emptyList(), null));
                 return null;
             }
         } else {
@@ -60,7 +61,7 @@ public class CycleTracer {
                         (cycleIndex-cycleStartIndex)*increment );
                 System.out.println("match length is " + (cycleIndex-cycleStartIndex) * increment + " and cycle length is " + cycle.getMoves().size() + " so we got " + moves.size() + " moves.");
                 System.out.println("Double checking length: " + startNode.toList(currentNode).size());
-                Shortcut newShortcut = new Shortcut(startNode, currentNode, moves);
+                Shortcut newShortcut = new Shortcut(startNode, currentNode, moves, null);
                 foundShortcuts.add(newShortcut);
 //                cycle.getPath(move2, )
                 return null;

@@ -1,6 +1,6 @@
 package model;
 
-import paths.Cycle;
+import abstraction.Cycle;
 import paths.MoveNode;
 import lombok.Builder;
 import lombok.Data;

@@ -1,10 +1,10 @@
 package traversal;
 
-import paths.AbstractCubeCycle;
-import paths.Cycle;
+import abstraction.RelativeCubeMove;
+import abstraction.AbstractCubeCycle;
+import abstraction.Cycle;
 import paths.PathRadixTree;
 import model.*;
-import paths.Shortcut;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
