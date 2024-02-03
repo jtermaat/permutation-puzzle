@@ -16,9 +16,9 @@ public class PuzzleSolver {
 //    final static String PUZZLE_TYPE = "cube_3/3/3";
 //final static String PUZZLE_TYPE = "cube_2/2/2";
 //    final static String PUZZLE_TYPE = "globe_3/4";
-    final static String PUZZLE_TYPE = "wreath_33/33";
+    final static String PUZZLE_TYPE = "wreath_100/100";
 //    final static String PUZZLE_TYPE = "cube_10/10/10";
-    final static int MAX_DEPTH = 15;
+    final static int MAX_DEPTH = 20;
 
     final static boolean IS_CUBE = false;
 
@@ -43,7 +43,7 @@ public class PuzzleSolver {
         Long time = System.currentTimeMillis();
         System.out.println("Collecting paths.");
         for (int i = 0;i<puzzles.size();++i) {
-            PathCollector collector = new PathCollector(puzzles.get(i), puzzleInfoToUse, MAX_DEPTH, pathMap);
+            PathCollector collector = new PathCollector(puzzles.get(i), pathMap, 100, MAX_DEPTH + 1);
             collector.collectPaths();
         }
         System.out.println("Finished collecting paths at " + (System.currentTimeMillis() - time) / 1000 + " seconds.");
@@ -53,6 +53,7 @@ public class PuzzleSolver {
         } else {
             hunter = new ShortcutHunter(puzzles, puzzleInfoToUse, MAX_DEPTH, pathMap);
         }
+        hunter.setPrintShortcuts(true);
         int oldTotalMoveLength = puzzles.stream()
                 .map(p -> p.getSolution().toList(null).size())
                 .reduce(0, Integer::sum);
@@ -118,7 +119,7 @@ public class PuzzleSolver {
 
     public static void validateSolution(Puzzle puzzle, List<Move> moves) {
         System.out.println("Validating solution for puzzle " + puzzle.getId());
-        Permutation checker = new Permutation(puzzle.getInitialState());
+        Mutator checker = new Mutator(puzzle.getInitialState());
         for (Move move : moves) {
             checker.transform(move);
         }
@@ -149,8 +150,8 @@ public class PuzzleSolver {
             startPositions2[i] = i;
         }
 
-        final Permutation checker1 = new Permutation(startPositions1);
-        Permutation checker2 = new Permutation(startPositions2);
+        final Mutator checker1 = new Mutator(startPositions1);
+        Mutator checker2 = new Mutator(startPositions2);
         list1.forEach(checker1::transform);
         list2.forEach(checker2::transform);
 

@@ -43,17 +43,15 @@ public class MoveNode {
             if (moves.isEmpty()) {
                 startNode.addOption(end);
             } else {
-                if (startNode != null) {
-                    MoveNode newNext = new MoveNode(moves.get(0));
-                    MoveNode lastNode = newNext;
-                    for (int i = 1; i < moves.size(); ++i) {
-                        MoveNode newNode = new MoveNode(moves.get(i));
-                        lastNode.addOption(newNode);
-                        lastNode = newNode;
-                    }
-                    lastNode.addOption(end);
-                    startNode.addOption(newNext);
+                MoveNode newNext = new MoveNode(moves.get(0));
+                MoveNode lastNode = newNext;
+                for (int i = 1; i < moves.size(); ++i) {
+                    MoveNode newNode = new MoveNode(moves.get(i));
+                    lastNode.addOption(newNode);
+                    lastNode = newNode;
                 }
+                lastNode.addOption(end);
+                startNode.addOption(newNext);
             }
         }
     }
@@ -110,13 +108,13 @@ public class MoveNode {
         }
     }
 
-    public void optimizeRoute() {
+    public void optimizeRoute() { // BFS to find the fastest route.
         setBackPointersToNull();
         Queue<MoveNode> nodeQueue = new LinkedList<>();
         nodeQueue.offer(this);
         while (!nodeQueue.isEmpty()) {
             MoveNode node = nodeQueue.poll();
-            if (node.getNext() == null) { // Means we found our end node.
+            if (node.getNext() == null) {   // Means we found our end node.
                 while(node.getBackPointer() != null) {
                     node.getBackPointer().setNext(node);
                     node = node.getBackPointer();
@@ -133,6 +131,5 @@ public class MoveNode {
                 }
             }
         }
-        System.out.println("An error occurred and the end of the sequence was never found.");
     }
 }

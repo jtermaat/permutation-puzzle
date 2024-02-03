@@ -67,7 +67,7 @@ public class CubeShortcutHunter extends ShortcutHunter {
             secondToLastMove = moveIndexes.peek();
             moveIndexes.push(moveIndex);
             moveIndex = 0;
-            handleSaving();
+            checkForShortcuts();
             if (moveIndexes.size() >= maxDepth) {
                 moveIndex = moveIndexes.pop();
                 this.transform(allowedMoves[moveIndex].getInverse());

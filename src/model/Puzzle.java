@@ -25,18 +25,12 @@ public class Puzzle {
     private final int numWildcards;
     private List<Path> paths;
     private MoveNode solution;
-//    private int solutionLength;
-
-//    public int getSolutionLength() {
-//        return solutionLength;
-//    }
 
     public static Puzzle getFromString(String str, PuzzleInfo puzzleInfo) {
         try {
             final String[] parts = str.split(",");
             final int newId = Integer.parseInt(parts[0]);
             final String newType = parts[1];
-//            System.out.println("New type: " + newType + ", puzzleInfo type: " + puzzleInfo.getPuzzleType());
             if (newType.equals(puzzleInfo.getPuzzleType())) {
                 final int newNumWildcards = Integer.parseInt(parts[4]);
                 final String[] newSolutionStateStrings = parts[2].split(";");
@@ -63,7 +57,6 @@ public class Puzzle {
                         .solutionState(newSolutionState)
                         .build();
             } else {
-//                System.out.println("Puzzle type " + newType + " doees not equal " + puzzleInfo.getPuzzleType());
                 return null;
             }
         } catch (NumberFormatException e) {
@@ -83,7 +76,6 @@ public class Puzzle {
                     String[] solutionSubParts = solutionParts[i].split(",");
                     int thisId = Integer.parseInt(solutionSubParts[0]);
                     List<Move> moves = getMovesFromString(solutionSubParts[1], puzzleInfoToUse);
-//                    System.out.println("Adding moves " + moves + " from string " + solutionSubParts[1] + " to id " + thisId);
                     idToMoveListMap.put(thisId, moves);
                 } catch (NumberFormatException e) {
                     System.out.println("Skipping line " + solutionParts[i]);
@@ -93,7 +85,6 @@ public class Puzzle {
                     .filter(Objects::nonNull)
                     .toList();
             puzzleList.forEach(p -> {
-//                p.setSolutionLength(idToMoveListMap.get(p.getId()).size());
                 p.setSolution(MoveNode.fromList(idToMoveListMap.get(p.getId())));
             });
             puzzleList.forEach(p -> p.setPuzzleInfo(puzzleInfoToUse));

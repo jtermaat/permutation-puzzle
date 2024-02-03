@@ -5,7 +5,7 @@ import lombok.Data;
 import main.PuzzleSolver;
 import model.Move;
 import paths.Shortcut;
-import traversal.Permutation;
+import traversal.Mutator;
 
 import java.util.*;
 import java.util.function.Function;
@@ -63,14 +63,14 @@ public class Cycle implements Comparable<Cycle> {
     private List<Cycle> splitIntoSubCycles() {
         cubeSortMoves();
         if (!moves.isEmpty()) {
-            Permutation testPermutation = new Permutation(moves.get(0).getNewPositions().length);
+            Mutator testMutator = new Mutator(moves.get(0).getNewPositions().length);
             for (int i = 0; i < moves.size(); ++i) {
-                testPermutation.resetPositions();
+                testMutator.resetPositions();
                 for (int j = i; j < moves.size(); ++j) {
-                    testPermutation.transform(moves.get(j));
+                    testMutator.transform(moves.get(j));
                     boolean matches = true;
-                    for (int k = 0;k<testPermutation.getPositions().length;++k) {
-                        matches = matches && testPermutation.getPositions()[k] == k;
+                    for (int k = 0; k< testMutator.getPositions().length; ++k) {
+                        matches = matches && testMutator.getPositions()[k] == k;
                     }
                     if (matches && !(i == 0 && j+1 == moves.size())) {
                         return split(i, j+1);

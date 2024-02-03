@@ -12,13 +12,11 @@ public class Shortcut {
     private final MoveNode start;
     private final MoveNode end;
     private final List<Move> shortcutMoves;
-    AbstractCubeCycle abstractCycle;
 
-    public Shortcut(MoveNode start, MoveNode end, List<Move> shortcutMoves, AbstractCubeCycle abstractCycle) {
+    public Shortcut(MoveNode start, MoveNode end, List<Move> shortcutMoves) {
         this.start = start;
         this.end = end;
         this.shortcutMoves = shortcutMoves;
-        this.abstractCycle = abstractCycle;
     }
 
     public void print() {
@@ -28,7 +26,6 @@ public class Shortcut {
         System.out.println("Shortcut moves: " + shortcutMoves.stream()
                 .map(Move::getName)
                 .reduce("", (a, b) -> a.concat(".").concat(b)));
-        System.out.println("From " + abstractCycle);
 //        System.out.println("Abstract cycle converts to " + )
         System.out.println();
     }

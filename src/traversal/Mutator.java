@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Permutation implements Comparable<Permutation> {
+public class Mutator implements Comparable<Mutator> {
 
     protected short[] positions;
     protected long gameHash;
@@ -20,12 +20,12 @@ public class Permutation implements Comparable<Permutation> {
             .toList();
 
 
-    public Permutation(int length) {
+    public Mutator(int length) {
         this.positions = new short[length];
         resetPositions();
     }
 
-    public Permutation(short[] positions) {
+    public Mutator(short[] positions) {
         this.positions = new short[positions.length];
         System.arraycopy(positions, 0, this.positions, 0, positions.length);
         this.calculateGameHash();
@@ -38,10 +38,6 @@ public class Permutation implements Comparable<Permutation> {
         }
     }
 
-    protected void recordCountChanges(short index, short newValue) {
-        this.gameHash += powersOfTwo.get(index) * newValue - powersOfTwo.get(index) * positions[index];
-    }
-
     public void transform(final Move move) {
         short lastIndex = -1;
         short lastValue = -1;
@@ -50,11 +46,13 @@ public class Permutation implements Comparable<Permutation> {
             if (lastIndex != swaps[i][1]) {
                 lastIndex = swaps[i][0];
                 lastValue = positions[swaps[i][0]];
-                recordCountChanges(swaps[i][0], positions[swaps[i][1]]);
+                this.gameHash += powersOfTwo.get(swaps[i][0]) * positions[swaps[i][1]]
+                        - powersOfTwo.get(swaps[i][0]) * positions[swaps[i][0]];
                 positions[swaps[i][0]] = positions[swaps[i][1]];
             } else {
                 final short temp = positions[swaps[i][0]];
-                recordCountChanges(swaps[i][0], lastValue);
+                this.gameHash += powersOfTwo.get(swaps[i][0]) * lastValue
+                        - powersOfTwo.get(swaps[i][0]) * positions[swaps[i][0]];
                 positions[swaps[i][0]] = lastValue;
                 lastIndex = swaps[i][0];
                 lastValue = temp;
@@ -62,12 +60,19 @@ public class Permutation implements Comparable<Permutation> {
         }
     }
 
-    @Override
-    public int compareTo(Permutation otherPermutation) {
+    public void resetPositions() {
         for (short i = 0;i<positions.length;++i) {
-            if (positions[i] < otherPermutation.getPositions()[i]) {
+            positions[i] = i;
+            calculateGameHash();
+        }
+    }
+
+    @Override
+    public int compareTo(Mutator otherMutator) {
+        for (short i = 0;i<positions.length;++i) {
+            if (positions[i] < otherMutator.getPositions()[i]) {
                 return -1;
-            } else if (positions[i] > otherPermutation.getPositions()[i]) {
+            } else if (positions[i] > otherMutator.getPositions()[i]) {
                 return 1;
             }
         }
@@ -76,23 +81,16 @@ public class Permutation implements Comparable<Permutation> {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null) {
+        if (o == null || !getClass().equals(o.getClass())) {
             return false;
         }
-        Permutation otherPermutation = (Permutation) o;
+        Mutator otherMutator = (Mutator) o;
         for (short i = 0;i<positions.length;++i) {
-            if (positions[i] != otherPermutation.getPositions()[i]) {
+            if (positions[i] != otherMutator.getPositions()[i]) {
                 return false;
             }
         }
         return true;
-    }
-
-    public void resetPositions() {
-        for (short i = 0;i<positions.length;++i) {
-            positions[i] = i;
-            calculateGameHash();
-        }
     }
 
     @Override

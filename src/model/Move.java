@@ -52,10 +52,7 @@ public class Move implements Comparable<Move> {
 
     public void setFaceData(List<Character> allFaces) {
         this.face = allFaces.indexOf(name.charAt(0));
-
         this.number = name.length() == 1 ? 0 : Integer.parseInt(name.substring(1));
-//        System.out.println("Face for " + name + " is " + this.face);
-//        System.out.println("Number for " + name + " is " + this.number);
     }
 
     public void initSwaps() {
@@ -111,14 +108,6 @@ public class Move implements Comparable<Move> {
 
     @Override
     public String toString() {
-//        String returnString = ("Move " + name + ": ");
-//        for (int i = 0;i<newPositions.length;i++) {
-//            returnString = returnString + newPositions[i];
-//            if (i < newPositions.length - 1) {
-//                returnString = returnString + ",";
-//            }
-//        }
-//        return returnString;
         return this.getName();
     }
 

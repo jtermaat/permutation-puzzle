@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 public class NewDriver {
 
 //    final static String PUZZLE_TYPE = "cube_4/4/4";
-    final static String PUZZLE_TYPE = "cube_2/2/2";
+//    final static String PUZZLE_TYPE = "cube_2/2/2";
     //    final static String PUZZLE_TYPE = "globe_3/33";
-//    final static String PUZZLE_TYPE = "wreath_21/21";
+    final static String PUZZLE_TYPE = "wreath_100/100";
 //    final static String PUZZLE_TYPE = "cube_10/10/10";
     final static int MAX_DEPTH = 10;
 
@@ -50,7 +50,7 @@ public class NewDriver {
         Long time = System.currentTimeMillis();
         System.out.println("Collecting paths.");
         for (int i = 0; i < puzzles.size(); ++i) {
-            PathCollector collector = new PathCollector(puzzles.get(i), puzzleInfoToUse, MAX_DEPTH, pathMap);
+            PathCollector collector = new PathCollector(puzzles.get(i), pathMap, 100, MAX_DEPTH + 1);
             collector.collectPaths();
         }
         System.out.println("Finished collecting paths at " + (System.currentTimeMillis() - time) / 1000 + " seconds.");
