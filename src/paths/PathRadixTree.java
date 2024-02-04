@@ -2,20 +2,21 @@ package paths;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class PathRadixTree {
 
     private List<Short> positions;
-    private PathRadixTree right;
-    private PathRadixTree left;
-    private PathRadixTree match;
+    private PathRadixTree[] nexts;
     private List<Path> data;
     private int startIndex;
+
 
     public PathRadixTree(short[] initPositions, Path path, int startIndex) {
         this.startIndex = startIndex;
@@ -36,104 +37,54 @@ public class PathRadixTree {
     }
 
     public List<Path> get(short[] checkPositions) {
-        for (int i = startIndex;i<startIndex + positions.size();++i) {
-            if (checkPositions[i] > positions.get(i-startIndex)) {
-                if (i-startIndex == positions.size() - 1) {
-                    return right == null ? null : right.get(checkPositions);
-                } else {
-                    return null;
-                }
-            } else if (checkPositions[i] < positions.get(i-startIndex)) {
-                if (i-startIndex == positions.size() - 1) {
-                    return left == null ? null : left.get(checkPositions);
-                } else {
-                    return null;
-                }
+        for (int i = 0;i<positions.size();++i) {
+            if (checkPositions[i+startIndex] != positions.get(i)) {
+                return null;
             }
         }
-        if (match == null) {
+        if (startIndex + positions.size() == checkPositions.length) {
             return data;
-        } else {
-            return match.get(checkPositions);
         }
+        if (nexts[checkPositions[startIndex + positions.size()]] == null) {
+            return null;
+        }
+        return nexts[checkPositions[startIndex + positions.size()]].get(checkPositions);
     }
 
     public void put(short[] newPositions, Path path) {
-        for (int i = startIndex; i < startIndex + positions.size(); ++i) {
-            if (newPositions[i] > positions.get(i - startIndex)) {
-                if (i == positions.size() - 1) {
-                    if (right == null) {
-                        right = new PathRadixTree(newPositions, path, i);
-                        return;
-                    } else {
-                        right.put(newPositions, path);
-                        return;
-                    }
-                } else {
-                    branchRight(newPositions, path, i);
-                    return;
-                }
-            } else if (newPositions[i] < positions.get(i - startIndex)) {
-                if (i == positions.size() - 1) {
-                    if (left == null) {
-                        left = new PathRadixTree(newPositions, path, i);
-                        return;
-                    } else {
-                        left.put(newPositions, path);
-                        return;
-                    }
-                } else {
-                    branchLeft(newPositions, path, i);
-                    return;
+        if (positions == null) {
+            init(newPositions, path, 0);
+        } else {
+            for (int i = startIndex; i < startIndex + positions.size(); ++i) {
+                if (newPositions[i] != positions.get(i - startIndex)) {
+                    branch(i, newPositions, path);
                 }
             }
-        }
-        if (match == null) {
-            data.add(path);
-        } else {
-            match.put(newPositions, path);
+            if (startIndex + positions.size() == newPositions.length) {
+                data.add(path);
+            } else {
+                if (nexts[newPositions[startIndex + positions.size()]] == null) {
+                    nexts[newPositions[startIndex + positions.size()]] =
+                            new PathRadixTree(newPositions, path, startIndex + positions.size());
+                } else
+                    nexts[newPositions[startIndex + positions.size()]].put(newPositions, path);
+            }
         }
     }
 
-    private void branch(short[] newPositions, Path path, int index, boolean branchRight) {
+    public void branch(int index, short[] newPositions, Path path) {
         List<Short> newMatchList = positions.subList(index-startIndex+1, positions.size());
-        List<Short> myNewList = positions.subList(0, index-startIndex+1);
-        List<Short> newBranchList = new ArrayList<>(newPositions.length - index);
-        for (int i = index;i<newPositions.length;++i) {
-            newBranchList.add(newPositions[i]);
-        }
-        this.match = PathRadixTree.builder()
+        List<Short> myNewList = positions.subList(0, index-startIndex);
+        PathRadixTree[] newNext = new PathRadixTree[newPositions.length];
+        newNext[positions.get(index-startIndex)] = PathRadixTree.builder()
                 .positions(newMatchList)
                 .data(data)
                 .startIndex(index+1)
-                .left(left)
-                .right(right)
-                .match(match)
+                .nexts(nexts)
                 .build();
+        newNext[newPositions[index]] = new PathRadixTree(newPositions, path, index+1);
         this.data = null;
-        this.left = null;
-        this.right = null;
         this.positions = myNewList;
-        List<Path> branchData = new ArrayList<>();
-        branchData.add(path);
-        PathRadixTree branch = PathRadixTree.builder()
-                .positions(newBranchList)
-                .data(branchData)
-                .startIndex(index)
-                .build();
-        if (branchRight) {
-            right = branch;
-        } else {
-            left = branch;
-        }
-
-    }
-
-    private void branchLeft(short[] newPositions, Path path, int index) {
-        branch(newPositions, path, index, false);
-    }
-
-    private void branchRight(short[] newPositions, Path path, int index) {
-       branch(newPositions, path, index, true);
+        this.nexts = newNext;
     }
 }

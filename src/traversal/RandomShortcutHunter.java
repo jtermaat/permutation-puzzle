@@ -4,12 +4,10 @@ import lombok.Setter;
 import model.Move;
 import model.PuzzleInfo;
 import paths.PathRadixTree;
-import paths.PathRadixTree2;
 import paths.Shortcut;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -30,8 +28,8 @@ public class RandomShortcutHunter extends ShortcutHunter {
     private List<Move> moveList;
 
 
-    public RandomShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, Map<Long, PathRadixTree2> pathMap, boolean printShortcuts, long timeLimit, int maxThreadCount, int minDepth) {
-        super(puzzleInfo, maxDepth, pathMap, printShortcuts);
+    public RandomShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, PathRadixTree pathTree, boolean printShortcuts, long timeLimit, int maxThreadCount, int minDepth) {
+        super(puzzleInfo, maxDepth, pathTree, printShortcuts);
         this.timeLimit = timeLimit;
         this.maxThreadCount = maxThreadCount;
         this.random = new Random();
@@ -39,12 +37,8 @@ public class RandomShortcutHunter extends ShortcutHunter {
         moveList = new ArrayList<>(maxDepth);
     }
 
-    public RandomShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, long timeLimit) {
-        this(puzzleInfo, maxDepth, PathCollector.DEFAULT_PATH_MAP, false, timeLimit, DEFAULT_THREAD_COUNT, 0);
-    }
-
-    public RandomShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, int minutes) {
-        this(puzzleInfo, maxDepth, (long) minutes * 60 * 60);
+    public RandomShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, PathRadixTree pathTree, int minutes) {
+        this(puzzleInfo, maxDepth, pathTree, false, (long)minutes*60L*1000L, DEFAULT_THREAD_COUNT, 0);
     }
 
     @Override
@@ -64,7 +58,7 @@ public class RandomShortcutHunter extends ShortcutHunter {
 
 
     protected RandomShortcutHunter copy() {
-        return new RandomShortcutHunter(puzzleInfo, maxDepth, pathMap, printShortcuts, timeLimit, maxThreadCount, minDepth);
+        return new RandomShortcutHunter(puzzleInfo, maxDepth, pathTree, printShortcuts, timeLimit, maxThreadCount, minDepth);
     }
 
     @Override

@@ -1,40 +1,36 @@
 package traversal;
 
+import lombok.Getter;
+import lombok.Setter;
 import paths.MoveNode;
 import paths.Path;
-import paths.PathRadixTree2;
-
-import java.util.*;
+import paths.PathRadixTree;
 
 public class PathCollector extends Mutator {
 
     private final int minLength; // Should be at least ShortcutHunter.maxDepth + 1
-
     private final int maxLength;
-    private final Map<Long, PathRadixTree2> pathMap;
+
+    @Getter
+    @Setter
+    private PathRadixTree pathTree;
     private final MoveNode node;
 
-    public final static Map<Long, PathRadixTree2> DEFAULT_PATH_MAP = new HashMap<>();
+    public final static PathRadixTree DEFAULT_PATH_TREE = new PathRadixTree();
 
 
-    public PathCollector(MoveNode node, Map<Long, PathRadixTree2> pathMap, int maxLength, int minLength) {
+    public PathCollector(MoveNode node, PathRadixTree pathTree, int maxLength, int minLength) {
         super(node.getMove().getNewPositions().length);
         this.node = node;
         this.maxLength = maxLength;
         this.minLength = minLength;
-        this.pathMap = pathMap;
-    }
-
-    public PathCollector(MoveNode node, int maxLength, int minLength) {
-        this(node, DEFAULT_PATH_MAP, maxLength, minLength);
+        this.pathTree = pathTree;
     }
 
     public int collectPaths() {
         MoveNode firstNode = node;
         int pathCount = 0;
-        int count = 0;
-        while (firstNode != null && count < maxLength) {
-            ++count;
+        while (firstNode != null) {
             this.resetPositions();
             int length = 0;
             MoveNode secondNode = firstNode;
@@ -45,11 +41,7 @@ public class PathCollector extends Mutator {
                 if (length > minLength) {
                     ++pathCount;
                     final Path path = new Path(firstNode, secondNode);
-                    if (pathMap.containsKey(gameHash)) {
-                        pathMap.get(gameHash).put(positions, path);
-                    } else {
-                        pathMap.put(gameHash, new PathRadixTree2(positions, path));
-                    }
+                    pathTree.put(positions, path);
                 }
             }
             firstNode = firstNode.getNext();

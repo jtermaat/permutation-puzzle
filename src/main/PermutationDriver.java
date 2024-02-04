@@ -1,14 +1,10 @@
 package main;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import model.Puzzle;
 import model.PuzzleInfo;
 import model.Solution;
 import paths.PathRadixTree;
-import paths.PathRadixTree2;
 import paths.Shortcut;
 import traversal.*;
 
@@ -27,24 +23,26 @@ public class PermutationDriver {
     private Solution solution;
     private List<Shortcut> shortcuts;
     private boolean printShortcuts;
-    private PathRadixTree2 radixTree;
+    private PathRadixTree radixTree;
 
     public PermutationDriver() {
         shortcuts = new ArrayList<>();
-        radixTree = new PathRadixTree2();
+        radixTree = new PathRadixTree();
     }
 
     public static void main(String[] args) {
-        PermutationDriver2 driver = new PermutationDriver2();
+        PermutationDriver driver = new PermutationDriver();
         driver.loadPuzzleInfos("/Users/johntermaat/Downloads/puzzle_info.csv");
         driver.loadPuzzles("/Users/johntermaat/Downloads/puzzles.csv");
         driver.loadSolution("/Users/johntermaat/Downloads/submission1.csv");
-        String puzzleType = "cube_33/33/33";
+        String puzzleType = "globe_3/4";
         driver.setPuzzleType(puzzleType);
-        int searchDepth = 3;
-        driver.setPrintShortcuts(false);
-        driver.collectPaths(20, searchDepth + 1);
-        driver.bruteForceSearch(searchDepth);
+        int searchDepth = 12;
+        int maxLength = 1000;
+        driver.setPrintShortcuts(true);
+        driver.collectPaths(maxLength, searchDepth+1);
+//        driver.bruteForceSearch(searchDepth);
+        driver.randomSearch(searchDepth, 0, 200);
         System.out.println("Old solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
         driver.activateShortcuts();
         System.out.println("New solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
@@ -52,11 +50,10 @@ public class PermutationDriver {
     }
 
     public void collectPaths(int maxLength, int minLength) {
-        radixTree = new PathRadixTree2();
         System.out.println("Collecting paths for " + puzzleType + ".");
         long startTime = System.currentTimeMillis();
         puzzleInfoMap.get(puzzleType).getPuzzles().stream()
-                .map(p -> new PathCollector(p.getSolution(), maxLength, minLength))
+                .map(p -> new PathCollector(p.getSolution(), radixTree, maxLength, minLength))
                 .forEach(PathCollector::collectPaths);
         long endTime = System.currentTimeMillis();
         double seconds = (double)(endTime - startTime) / (1000.0);
@@ -64,13 +61,13 @@ public class PermutationDriver {
     }
 
     public void randomSearch(int maxDepth, int minDepth, int minutes) {
-//        RandomShortcutHunter2 hunter = new RandomShortcutHunter(puzzleInfoMap.get(puzzleType), maxDepth, minutes);
-//        hunter.setMinDepth(minDepth);
-//        search(hunter);
+        RandomShortcutHunter hunter = new RandomShortcutHunter(puzzleInfoMap.get(puzzleType), maxDepth, radixTree, minutes);
+        hunter.setMinDepth(minDepth);
+        search(hunter);
     }
 
     public void bruteForceSearch(int maxDepth) {
-        BruteForceShortcutHunter hunter = new BruteForceShortcutHunter(puzzleInfoMap.get(puzzleType), maxDepth);
+        BruteForceShortcutHunter hunter = new BruteForceShortcutHunter(puzzleInfoMap.get(puzzleType), maxDepth, radixTree, printShortcuts);
         search(hunter);
     }
 
