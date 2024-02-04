@@ -4,12 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import model.Move;
+import model.PuzzleInfo;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Data
 public class Mutator implements Comparable<Mutator> {
 
@@ -19,10 +19,13 @@ public class Mutator implements Comparable<Mutator> {
             .map(i -> (long) Math.pow(2, i))
             .toList();
 
-
     public Mutator(int length) {
         this.positions = new short[length];
         resetPositions();
+    }
+
+    public Mutator(PuzzleInfo puzzleInfo) {
+        this(puzzleInfo.getAllowedMoves()[0].getNewPositions().length);
     }
 
     public Mutator(short[] positions) {

@@ -33,7 +33,7 @@ public class CycleTracer2 {
                         List<Move> remainingInvertedMoves = cycle.getMoves().subList(i, cycle.getMoves().size()).reversed().stream()
                                 .map(Move::getInverse)
                                 .toList();
-                        Shortcut newShortcut = new Shortcut(startNode, currentNode, remainingInvertedMoves, abstractCycle);
+                        Shortcut newShortcut = new Shortcut(startNode, currentNode, remainingInvertedMoves);
                         foundShortcuts.add(newShortcut);
                     }
                     return;
@@ -42,7 +42,7 @@ public class CycleTracer2 {
                 return;
             }
         }
-        foundShortcuts.add(new Shortcut(startNode, currentNode, Collections.emptyList(), abstractCycle));
+        foundShortcuts.add(new Shortcut(startNode, currentNode, Collections.emptyList()));
     }
 }
 

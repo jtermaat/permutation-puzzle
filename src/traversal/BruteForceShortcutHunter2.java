@@ -2,31 +2,29 @@ package traversal;
 
 import model.Move;
 import model.PuzzleInfo;
-import paths.PathRadixTree;
 import paths.PathRadixTree2;
 import paths.Shortcut;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class BruteForceShortcutHunter extends ShortcutHunter {
+public class BruteForceShortcutHunter2 extends ShortcutHunter2 {
 
     protected Deque<Integer> moveIndexes;
     protected int moveIndex;
 
-    public BruteForceShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, Map<Long, PathRadixTree2> pathMap, boolean printShortcuts) {
-        super(puzzleInfo, maxDepth, pathMap, printShortcuts);
+    public BruteForceShortcutHunter2(PuzzleInfo puzzleInfo, int maxDepth, PathRadixTree2 pathTree, boolean printShortcuts) {
+        super(puzzleInfo, maxDepth, pathTree, printShortcuts);
         moveIndexes = new ArrayDeque<>();
         moveIndex = 0;
     }
 
-    public BruteForceShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth) {
-        this(puzzleInfo, maxDepth, PathCollector.DEFAULT_PATH_MAP, false);
+    public BruteForceShortcutHunter2(PuzzleInfo puzzleInfo, int maxDepth) {
+        this(puzzleInfo, maxDepth, PathCollector2.DEFAULT_PATH_TREE, false);
     }
 
     @Override
@@ -44,8 +42,8 @@ public class BruteForceShortcutHunter extends ShortcutHunter {
     }
 
     @Override
-    protected BruteForceShortcutHunter copy() {
-        return new BruteForceShortcutHunter(puzzleInfo, maxDepth, pathMap, printShortcuts);
+    protected BruteForceShortcutHunter2 copy() {
+        return new BruteForceShortcutHunter2(puzzleInfo, maxDepth, pathTree, printShortcuts);
     }
 
     public Stream<Shortcut> searchWithMove(int index) {
@@ -84,3 +82,4 @@ public class BruteForceShortcutHunter extends ShortcutHunter {
         return true;
     }
 }
+

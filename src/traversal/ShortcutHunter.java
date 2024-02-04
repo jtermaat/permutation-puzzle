@@ -5,20 +5,19 @@ import lombok.Setter;
 import paths.Path;
 import paths.PathRadixTree;
 import model.*;
+import paths.PathRadixTree2;
 import paths.Shortcut;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class ShortcutHunter extends Mutator {
-    protected Map<Long, PathRadixTree> pathMap;
+    protected Map<Long, PathRadixTree2> pathMap;
 
     @Getter
     protected List<Shortcut> foundShortcuts;
     protected int maxDepth;
     protected PuzzleInfo puzzleInfo;
-    protected Deque<Integer> moveIndexes;
-    protected int moveIndex;
     protected Move[] allowedMoves;
 
     @Getter
@@ -29,7 +28,7 @@ public abstract class ShortcutHunter extends Mutator {
         this(puzzleInfo, maxDepth, PathCollector.DEFAULT_PATH_MAP, false);
     }
 
-    public ShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, Map<Long, PathRadixTree> pathMap) {
+    public ShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, Map<Long, PathRadixTree2> pathMap) {
         this(puzzleInfo, maxDepth, pathMap, false);
     }
 
@@ -37,29 +36,24 @@ public abstract class ShortcutHunter extends Mutator {
         this(puzzleInfo, maxDepth, PathCollector.DEFAULT_PATH_MAP, printShortcuts);
     }
 
-    public ShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, Map<Long, PathRadixTree> pathMap, boolean printShortcuts) {
-        super();
+    public ShortcutHunter(PuzzleInfo puzzleInfo, int maxDepth, Map<Long, PathRadixTree2> pathMap, boolean printShortcuts) {
+        super(puzzleInfo.getAllowedMoves()[0].getNewPositions().length);
         this.pathMap = pathMap;
         this.puzzleInfo = puzzleInfo;
         this.maxDepth = maxDepth;
         this.printShortcuts = printShortcuts;
-        moveIndexes = new ArrayDeque<>();
-        moveIndex = 0;
         allowedMoves = puzzleInfo.getAllowedMoves();
         foundShortcuts = new ArrayList<>();
     }
 
-    protected abstract List<Shortcut> performSearch();
+    public abstract List<Shortcut> performSearch();
 
-    public void searchAndActivateShortcuts() {
-        foundShortcuts = this.performSearch();
-        System.out.println("Activating " + foundShortcuts.size() + " total shortcuts.");
-        this.performSearch().forEach(Shortcut::activate);
-        System.out.println("Shortcuts activated.");
-    }
+    protected abstract List<Move> getMoveList();
+
+    protected abstract ShortcutHunter copy();
 
     protected void checkForShortcuts() {
-        PathRadixTree pathTree = pathMap.get(gameHash);
+        PathRadixTree2 pathTree = pathMap.get(gameHash);
         if (pathTree != null) {
             List<Path> paths = pathTree.get(positions);
             if (paths != null) {
@@ -72,11 +66,5 @@ public abstract class ShortcutHunter extends Mutator {
                 }
             }
         }
-    }
-
-    protected List<Move> getMoveList() {
-        return moveIndexes.reversed().stream()
-                .map(i -> allowedMoves[i])
-                .collect(Collectors.toList());
     }
 }

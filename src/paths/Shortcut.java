@@ -1,9 +1,7 @@
 package paths;
 
-import abstraction.AbstractCubeCycle;
 import lombok.Data;
 import model.Move;
-import main.PuzzleSolver;
 
 import java.util.List;
 
@@ -23,19 +21,12 @@ public class Shortcut {
         System.out.print("Original path: ");
         start.printPathTo(end);
         System.out.println();
-        System.out.println("Shortcut moves: " + shortcutMoves.stream()
-                .map(Move::getName)
-                .reduce("", (a, b) -> a.concat(".").concat(b)));
-//        System.out.println("Abstract cycle converts to " + )
+        System.out.println("Shortcut moves: " +
+                String.join(".", shortcutMoves.stream().map(Move::getName).toList()));;
         System.out.println();
     }
 
     public void activate() {
         start.createChainTo(end, shortcutMoves);
-    }
-
-    public void validate() {
-        List<Move> originalMoves = start.toList(end);
-        PuzzleSolver.validateEquality(originalMoves, shortcutMoves);
     }
 }

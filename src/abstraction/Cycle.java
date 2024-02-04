@@ -2,7 +2,6 @@ package abstraction;
 
 import lombok.Builder;
 import lombok.Data;
-import main.PuzzleSolver;
 import model.Move;
 import paths.Shortcut;
 import traversal.Mutator;
@@ -124,7 +123,7 @@ public class Cycle implements Comparable<Cycle> {
 //    }
 
     public boolean isValid() {
-        return PuzzleSolver.validateEquality(moves, Collections.emptyList());
+        return validateEquality(moves, Collections.emptyList());
     }
 
     public static List<Move> cubeSortMoves(List<Move> moves) {
@@ -314,5 +313,37 @@ public class Cycle implements Comparable<Cycle> {
             cycleSet.addAll(cycle.splitIntoAllSubCycles());
         }
         return cycleSet.stream().toList();
+    }
+
+    public static boolean validateEquality(List<Move> list1, List<Move> list2) {
+//        System.out.println("Validating moveList equality.");
+        if (list1.isEmpty() && list2.isEmpty()) {
+            return true;
+        }
+        int length = list1.isEmpty() ? list2.getFirst().getNewPositions().length : list1.getFirst().getNewPositions().length;
+        short[] startPositions1 = new short[length];
+        short[] startPositions2 = new short[length];
+        for (short i = 0;i<startPositions1.length;++i) {
+            startPositions1[i] = i;
+            startPositions2[i] = i;
+        }
+
+        final Mutator checker1 = new Mutator(startPositions1);
+        Mutator checker2 = new Mutator(startPositions2);
+        list1.forEach(checker1::transform);
+        list2.forEach(checker2::transform);
+
+        boolean matches = true;
+        for (int i = 0;i<checker1.getPositions().length;++i) {
+            if (checker1.getPositions()[i] != checker2.getPositions()[i]) {
+                matches = false;
+            }
+        }
+        if (matches) {
+//            System.out.println("These move lists match!!!");
+        } else {
+//            System.out.println("These move lists don't match.");
+        }
+        return matches;
     }
 }

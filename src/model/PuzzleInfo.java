@@ -17,9 +17,9 @@ import java.util.stream.Stream;
 @Builder
 public class PuzzleInfo {
     private String puzzleType;
-
-//    private List<Move> allowedMoves;
     private Move[] allowedMoves;
+    private List<Puzzle> puzzles;
+
     public static PuzzleInfo getFromString(String lineString) {
         lineString = lineString.replaceAll("\n", "");
         try {

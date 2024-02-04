@@ -47,7 +47,7 @@ public class CycleTracer {
             cycleIndex += increment;
 //            cycleIndex = Math.floorMod(cycleIndex, cycle.getMoves().size()); // % cycle.getMoves().size();
             if (Math.floorMod(cycleIndex, cycle.getMoves().size()) == cycleStartIndex) {
-                foundShortcuts.add(new Shortcut(startNode, currentNode, Collections.emptyList(), null));
+                foundShortcuts.add(new Shortcut(startNode, currentNode, Collections.emptyList()));
                 return null;
             }
         } else {
@@ -61,7 +61,7 @@ public class CycleTracer {
                         (cycleIndex-cycleStartIndex)*increment );
                 System.out.println("match length is " + (cycleIndex-cycleStartIndex) * increment + " and cycle length is " + cycle.getMoves().size() + " so we got " + moves.size() + " moves.");
                 System.out.println("Double checking length: " + startNode.toList(currentNode).size());
-                Shortcut newShortcut = new Shortcut(startNode, currentNode, moves, null);
+                Shortcut newShortcut = new Shortcut(startNode, currentNode, moves);
                 foundShortcuts.add(newShortcut);
 //                cycle.getPath(move2, )
                 return null;

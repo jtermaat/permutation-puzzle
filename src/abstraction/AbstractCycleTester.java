@@ -1,4 +1,4 @@
-package main;
+package abstraction;
 
 import model.Move;
 import model.Puzzle;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class CycleTester {
+public class AbstractCycleTester {
 
 //    final static String PUZZLE_TYPE = "cube_3/3/3";
     final static String PUZZLE_TYPE = "cube_33/33/33"; //"cube_6/6/6";
@@ -33,10 +33,10 @@ public class CycleTester {
                 .collect(Collectors.toMap(PuzzleInfo::getPuzzleType, Function.identity()));
         PuzzleInfo puzzleInfoToUse = puzzleInfoMap.get(PUZZLE_TYPE);
         System.out.println("useing puzzle info " + puzzleInfoToUse.getPuzzleType());
-        List<Puzzle> puzzles = Puzzle.readPuzzleList(puzzlesFilename, existingSolutionFilename, puzzleInfoToUse).stream()
-                .filter(p -> p.getPuzzleType().equals(PUZZLE_TYPE))
-//                .limit(1)
-                .toList();
+//        List<Puzzle> puzzles = Puzzle.readPuzzleList(puzzlesFilename, existingSolutionFilename, puzzleInfoToUse).stream()
+//                .filter(p -> p.getPuzzleType().equals(PUZZLE_TYPE))
+////                .limit(1)
+//                .toList();
 
 //        String testString = "-r0.-r1.-r2.-f1.r0.r1.r2.-d1";
 //        String testString = "-r0.-r1.-r2.-f2.r0.r1.r2.-d0";

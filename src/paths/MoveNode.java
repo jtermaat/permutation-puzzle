@@ -16,24 +16,23 @@ public class MoveNode {
     @Setter
     private MoveNode backPointer;
 
+    public MoveNode() {
+        options = new HashSet<>();
+        move = null;
+    }
+
     public MoveNode(Move move) {
         this.move = move;
         options = new HashSet<>();
     }
 
-    public static MoveNode fromList(List<Move> moves) {
-        try {
-            MoveNode startNode = new MoveNode(moves.get(0));
-            MoveNode lastNode = startNode;
-            for (int i = 1; i < moves.size(); ++i) {
-                MoveNode newNode = new MoveNode(moves.get(i));
-                lastNode.setNext(newNode);
-                lastNode = newNode;
-            }
-            return startNode;
-        } catch (Exception e) {
-            System.out.println("Error initializing empty move List " + moves);
-            return null;
+    public MoveNode(List<Move> moves) {
+        this(moves.get(0));
+        MoveNode lastNode = this;
+        for (int i = 1; i < moves.size(); ++i) {
+            MoveNode newNode = new MoveNode(moves.get(i));
+            lastNode.setNext(newNode);
+            lastNode = newNode;
         }
     }
 
@@ -110,7 +109,7 @@ public class MoveNode {
 
     public void optimizeRoute() { // BFS to find the fastest route.
         setBackPointersToNull();
-        Queue<MoveNode> nodeQueue = new LinkedList<>();
+        Queue<MoveNode> nodeQueue = new ArrayDeque<>();
         nodeQueue.offer(this);
         while (!nodeQueue.isEmpty()) {
             MoveNode node = nodeQueue.poll();

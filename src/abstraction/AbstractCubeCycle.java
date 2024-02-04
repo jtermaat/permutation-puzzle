@@ -3,7 +3,6 @@ package abstraction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import main.PuzzleSolver;
 import model.Move;
 import paths.MoveNode;
 import paths.Shortcut;
@@ -105,7 +104,7 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
                     for (int l = 0;l<allowedMoves[j][k].length;++l) {
                         Cycle cycle = getRelativeTo(allowedMoves[j][k][l], i);
                         if (cycle != null) {
-                            if (PuzzleSolver.validateEquality(getRelativeTo(allowedMoves[j][k][l], i).getMoves(), Collections.emptyList())) {
+                            if (Cycle.validateEquality(getRelativeTo(allowedMoves[j][k][l], i).getMoves(), Collections.emptyList())) {
                                 validMoves.add(allowedMoves[j][k][l]);
                             } else {
 //                                System.out.println("Starting with " + allowedMoves[j][k][l] + " we get FAILED " + getRelativeTo(allowedMoves[j][k][l]));
@@ -125,7 +124,7 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
                 for (Move move : value) {
                     Cycle cycle = getRelativeTo(move);
                     if (cycle != null) {
-                        if (PuzzleSolver.validateEquality(getRelativeTo(move).getMoves(), Collections.emptyList())) {
+                        if (Cycle.validateEquality(getRelativeTo(move).getMoves(), Collections.emptyList())) {
                             validMoves.add(move);
                         } else {
 //                            System.out.println("Starting with " + move + " we get FAILED " + getRelativeTo(move));
@@ -143,7 +142,7 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
                 for (Move move : allowedMovesForFaceAndNumber) {
                     Cycle cycle = getRelativeTo(move);
                     if (cycle != null) {
-                        if (!PuzzleSolver.validateEquality(getRelativeTo(move).getMoves(), Collections.emptyList())) {
+                        if (!Cycle.validateEquality(getRelativeTo(move).getMoves(), Collections.emptyList())) {
 //                            System.out.println("Cycle " + toString() + " is INVALID for starting move " + move);
                             return false;
                         }
