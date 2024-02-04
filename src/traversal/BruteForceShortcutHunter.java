@@ -38,6 +38,11 @@ public class BruteForceShortcutHunter extends ShortcutHunter {
     }
 
     @Override
+    protected int getLength() {
+        return moveIndexes.size();
+    }
+
+    @Override
     protected BruteForceShortcutHunter copy() {
         return new BruteForceShortcutHunter(puzzleInfo, maxDepth, pathTree, printShortcuts);
     }

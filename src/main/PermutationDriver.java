@@ -35,14 +35,15 @@ public class PermutationDriver {
         driver.loadPuzzleInfos("/Users/johntermaat/Downloads/puzzle_info.csv");
         driver.loadPuzzles("/Users/johntermaat/Downloads/puzzles.csv");
         driver.loadSolution("/Users/johntermaat/Downloads/submission1.csv");
-        String puzzleType = "globe_3/4";
+        String puzzleType = "globe_3/33";
         driver.setPuzzleType(puzzleType);
-        int searchDepth = 12;
-        int maxLength = 1000;
+        int searchDepth = 15;
+        int maxLength = 17;
+        int minLength = 5;
         driver.setPrintShortcuts(true);
-        driver.collectPaths(maxLength, searchDepth+1);
+        driver.collectPaths(maxLength, minLength);
 //        driver.bruteForceSearch(searchDepth);
-        driver.randomSearch(searchDepth, 0, 200);
+        driver.randomSearch(searchDepth, 0, 60);
         System.out.println("Old solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
         driver.activateShortcuts();
         System.out.println("New solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
@@ -52,12 +53,13 @@ public class PermutationDriver {
     public void collectPaths(int maxLength, int minLength) {
         System.out.println("Collecting paths for " + puzzleType + ".");
         long startTime = System.currentTimeMillis();
-        puzzleInfoMap.get(puzzleType).getPuzzles().stream()
+        int numPaths = puzzleInfoMap.get(puzzleType).getPuzzles().stream()
                 .map(p -> new PathCollector(p.getSolution(), radixTree, maxLength, minLength))
-                .forEach(PathCollector::collectPaths);
+                .map(PathCollector::collectPaths)
+                .reduce(0, Integer::sum);
         long endTime = System.currentTimeMillis();
         double seconds = (double)(endTime - startTime) / (1000.0);
-        System.out.println("Collected paths for " + puzzleType + " in " + seconds + " seconds.");
+        System.out.println("Collected " + numPaths + " paths for " + puzzleType + " in " + seconds + " seconds.");
     }
 
     public void randomSearch(int maxDepth, int minDepth, int minutes) {

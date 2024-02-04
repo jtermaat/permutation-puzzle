@@ -56,6 +56,10 @@ public class RandomShortcutHunter extends ShortcutHunter {
         return this.moveList;
     }
 
+    @Override
+    protected int getLength() {
+        return moveList.size();
+    }
 
     protected RandomShortcutHunter copy() {
         return new RandomShortcutHunter(puzzleInfo, maxDepth, pathTree, printShortcuts, timeLimit, maxThreadCount, minDepth);

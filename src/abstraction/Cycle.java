@@ -76,28 +76,11 @@ public class Cycle implements Comparable<Cycle> {
                     }
                 }
             }
-//            int halfPoint = (int)(moves.size()/2.0);
-//            for (int i = halfPoint+1;i<moves.size() + halfPoint;++i) {
-//                testPermutation.resetPositions();
-//                for (int j = i; j < moves.size() + halfPoint; ++j) {
-//                    testPermutation.transform(moves.get(j%moves.size()));
-//                    boolean matches = true;
-//                    for (int k = 0;k<testPermutation.getPositions().length;++k) {
-//                        matches = matches && testPermutation.getPositions()[k] == k;
-//                    }
-//                    if (matches && !(i == halfPoint && j+1 == moves.size() + halfPoint)) {
-//                        return split(i, (j+1)%moves.size());
-//                    }
-//                }
-//            }
         }
-//        System.out.println("Nothing to split in this: " + this.toString());
         return Collections.singletonList(this);
     }
 
     public List<Cycle> split(int startIndex, int endIndex) {
-//        System.out.println("Splitting.");
-//        print();
         List<Move> moveList1 = moves.subList(startIndex, endIndex);
         List<Move> moveList2 = new ArrayList<>(moves.size() - moveList1.size());
         moveList2.addAll(moves.subList(endIndex, moves.size()));
@@ -106,7 +89,6 @@ public class Cycle implements Comparable<Cycle> {
         newCycle1.cubeSortMoves();
         Cycle newCycle2 = new Cycle(moveList2);
         newCycle2.cubeSortMoves();
-//        System.out.println("Split into " + newCycle1 + " and " + newCycle2);
         return Arrays.asList(newCycle1, newCycle2);
     }
 
@@ -118,30 +100,16 @@ public class Cycle implements Comparable<Cycle> {
                 .build();
     }
 
-//    public List<Shortcut> findShortcuts(MoveNode startNode) {
-//        Map<>
-//    }
-
     public boolean isValid() {
         return validateEquality(moves, Collections.emptyList());
     }
 
     public static List<Move> cubeSortMoves(List<Move> moves) {
         if (moves.size() > 1) {
-//            pivotToLowestComparisonScore();
-//            System.out.println("Before cube sorting: ");
-//            print();
             int currentFace = -1;
             List<List<Move>> groupedList = new ArrayList<>();
             List<Move> currentList = new ArrayList<>();
-//            int backIndex = moves.size() - 1;
-//            Move firstMove = moves.get(0);
-//            while (backIndex >= 0 && moves.get(backIndex).getFace() == firstMove.getFace()) {
-//                currentList.add(moves.get(backIndex));
-//                --backIndex;
-//            }
             for (int i = 0;i<moves.size();++i) {
-//                try {
                     if (moves.get(i).getFace() == currentFace) {
                         currentList.add(moves.get(i));
                     } else {
@@ -152,9 +120,6 @@ public class Cycle implements Comparable<Cycle> {
                         currentList = new ArrayList<>();
                         currentList.add(moves.get(i));
                     }
-//                } catch (Exception e) {
-////                    e.printStackTrace();
-//                }
             }
             if (!currentList.isEmpty()) {
                 currentList.sort(Comparator.comparing(Move::getInversionNumber));
@@ -165,26 +130,12 @@ public class Cycle implements Comparable<Cycle> {
             for (List<Move> list : groupedList) {
                 moves.addAll(list);
             }
-//            pivotToLowestComparisonScore();
-//            System.out.println("Validating...");
-//            if (isValid()) {
-//                System.out.println("Valid cycle! ");
-//            } else {
-//                System.out.println("NOT A VALID CYCLE");
-//            }
-//            System.out.println("After cube sorting: ");
-//            print();
-//            System.out.println();
-//            System.out.println();
         }
         return moves;
     }
 
     public void cubeSortMoves() {
         if (moves.size() > 1) {
-//            pivotToLowestComparisonScore();
-//            System.out.println("Before cube sorting: ");
-//            print();
             int currentFace = -1;
             List<List<Move>> groupedList = new ArrayList<>();
             List<Move> currentList = new ArrayList<>();
@@ -215,17 +166,6 @@ public class Cycle implements Comparable<Cycle> {
             for (List<Move> list : groupedList) {
                 moves.addAll(list);
             }
-//            pivotToLowestComparisonScore();
-//            System.out.println("Validating...");
-//            if (isValid()) {
-//                System.out.println("Valid cycle! ");
-//            } else {
-//                System.out.println("NOT A VALID CYCLE");
-//            }
-//            System.out.println("After cube sorting: ");
-//            print();
-//            System.out.println();
-//            System.out.println();
         }
     }
 
@@ -243,30 +183,6 @@ public class Cycle implements Comparable<Cycle> {
         System.out.println(this.toString());
     }
 
-    private void pivotToLowestComparisonScore() {
-        List<Move> allMoveTypes = new HashSet<>(moves).stream()
-                .sorted()
-                .toList();
-        Map<Move, Integer> allMoveMap = new HashMap<>();
-        for (int i = 0;i<allMoveTypes.size();++i) {
-            allMoveMap.put(allMoveTypes.get(i), i);
-        }
-
-        long minScore = Long.MAX_VALUE;
-        int minScoreIndex = -1;
-        for (int startIndex = 0;startIndex < moves.size();++startIndex) {
-            long score = 0L;
-            for (int i = 0;i<moves.size();++i) {
-                score += allMoveMap.get(moves.get((i+startIndex)%moves.size())) * (long)Math.pow(allMoveTypes.size(), i);
-            }
-            if (score < minScore) {
-                minScore = score;
-                minScoreIndex = startIndex;
-            }
-        }
-        pivot(minScoreIndex);
-    }
-
     private void pivot(int index) {
         List<Move> newList = new ArrayList<>(moves.size());
         for (int i = 0;i<moves.size();++i) {
@@ -281,13 +197,6 @@ public class Cycle implements Comparable<Cycle> {
             return moves.stream()
                     .map(Move::getName)
                     .reduce("", (a,b) -> a.concat(",").concat(b)).concat("\n");
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(moves.get(0).getName());
-//            for (int i = 1; i < moves.size(); ++i) {
-//                sb.append(",").append(moves.get(i).getName());
-//            }
-//            sb.append("\n");
-//            return sb.toString();
         }
         return "";
     }
@@ -316,7 +225,6 @@ public class Cycle implements Comparable<Cycle> {
     }
 
     public static boolean validateEquality(List<Move> list1, List<Move> list2) {
-//        System.out.println("Validating moveList equality.");
         if (list1.isEmpty() && list2.isEmpty()) {
             return true;
         }
@@ -338,11 +246,6 @@ public class Cycle implements Comparable<Cycle> {
             if (checker1.getPositions()[i] != checker2.getPositions()[i]) {
                 matches = false;
             }
-        }
-        if (matches) {
-//            System.out.println("These move lists match!!!");
-        } else {
-//            System.out.println("These move lists don't match.");
         }
         return matches;
     }

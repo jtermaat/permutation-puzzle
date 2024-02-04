@@ -45,16 +45,20 @@ public abstract class ShortcutHunter extends Mutator {
 
     protected abstract ShortcutHunter copy();
 
+    protected abstract int getLength();
+
 
     protected void checkForShortcuts() {
         List<Path> paths = pathTree.get(positions);
         if (paths != null) {
             for (Path path : paths) {
-                Shortcut shortcut = new Shortcut(path.getStart(), path.getEnd(), getMoveList());
-                if (printShortcuts) {
-                    shortcut.print();
+                if (path.getLength() > this.getLength()) {
+                    Shortcut shortcut = new Shortcut(path.getStart(), path.getEnd(), getMoveList());
+                    if (printShortcuts) {
+                        shortcut.print();
+                    }
+                    foundShortcuts.add(shortcut);
                 }
-                foundShortcuts.add(shortcut);
             }
         }
     }

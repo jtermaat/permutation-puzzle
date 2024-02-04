@@ -40,7 +40,7 @@ public class PathCollector extends Mutator {
                 ++ length;
                 if (length > minLength) {
                     ++pathCount;
-                    final Path path = new Path(firstNode, secondNode);
+                    final Path path = new Path(firstNode, secondNode, length);
                     pathTree.put(positions, path);
                 }
             }
