@@ -1,6 +1,7 @@
 package traversal;
 
 import model.Move;
+import model.Puzzle;
 import model.PuzzleInfo;
 import paths.PathRadixTree;
 import paths.Shortcut;
@@ -27,12 +28,12 @@ public class BruteForceShortcutHunter extends ShortcutHunter {
     public List<Shortcut> performSearch() {
         return IntStream.range(0, allowedMoves.length).boxed().parallel()
                 .flatMap(index -> this.copy().searchWithMove(index))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
     protected List<Move> getMoveList() {
-        return moveIndexes.reversed().stream()
+        return Puzzle.reverse(moveIndexes.stream())
                 .map(i -> allowedMoves[i])
                 .collect(Collectors.toList());
     }

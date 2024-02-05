@@ -1,11 +1,13 @@
 package abstraction;
 
 import model.Move;
+import model.Puzzle;
 import paths.MoveNode;
 import paths.Shortcut;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CycleTracer {
     private final MoveNode startNode;
@@ -30,9 +32,10 @@ public class CycleTracer {
                     currentNode = currentNode.getNext();
                 } else {
                     if (i > cycle.getMoves().size() / 2.0) {
-                        List<Move> remainingInvertedMoves = cycle.getMoves().subList(i, cycle.getMoves().size()).reversed().stream()
+
+                        List<Move> remainingInvertedMoves = Puzzle.reverse(cycle.getMoves().subList(i, cycle.getMoves().size()).stream())
                                 .map(Move::getInverse)
-                                .toList();
+                                .collect(Collectors.toList());
                         Shortcut newShortcut = new Shortcut(startNode, currentNode, remainingInvertedMoves);
                         foundShortcuts.add(newShortcut);
                     }

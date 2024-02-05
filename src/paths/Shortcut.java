@@ -4,6 +4,7 @@ import lombok.Data;
 import model.Move;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 public class Shortcut {
@@ -22,7 +23,7 @@ public class Shortcut {
         start.printPathTo(end);
         System.out.println();
         System.out.println("Shortcut moves: " +
-                String.join(".", shortcutMoves.stream().map(Move::getName).toList()));;
+                String.join(".", shortcutMoves.stream().map(Move::getName).collect(Collectors.toList())));
         System.out.println();
     }
 

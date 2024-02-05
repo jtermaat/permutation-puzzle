@@ -8,6 +8,7 @@ import paths.MoveNode;
 import paths.Shortcut;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -135,7 +136,7 @@ public class AbstractCubeCycle implements Comparable<AbstractCubeCycle> {
         Cycle cycle = getRelativeTo(startMove, startIndex);
         return cycle.getMoves().subList(length, cycle.getMoves().size()).stream()
                 .map(Move::getInverse)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public List<CycleTracer> getCycleTracers(MoveNode node, List<Shortcut> foundShortcuts) {

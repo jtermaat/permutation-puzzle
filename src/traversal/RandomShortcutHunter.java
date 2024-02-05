@@ -9,6 +9,7 @@ import paths.Shortcut;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -47,7 +48,7 @@ public class RandomShortcutHunter extends ShortcutHunter {
         return  IntStream.range(0, maxThreadCount).boxed().parallel()
                 .map(i -> this.copy())
                 .flatMap(h -> h.searchUntil(endTime))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override

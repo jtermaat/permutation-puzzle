@@ -36,7 +36,7 @@ public class PuzzleInfo {
                 for (String a : movesMap.keySet()) {
                     List<Short> positions = movesMap.get(a).stream()
                             .map(s -> s.shortValue())
-                            .toList();
+                            .collect(Collectors.toList());
                     short[] newPositions = new short[positions.size()];
                     for (short i = 0; i < positions.size(); i++) {
                         newPositions[i] = positions.get(i);
@@ -50,7 +50,7 @@ public class PuzzleInfo {
                 }
                 List<Character> allFaces = allowed.stream()
                         .map(m -> m.getName().toCharArray()[0])
-                        .collect(Collectors.toSet()).stream().toList();
+                        .collect(Collectors.toSet()).stream().collect(Collectors.toList());
                 allowed.forEach(m -> m.setFaceData(allFaces));
                 List<Move> allowedMovesList = allowed.stream()
                         .flatMap(move -> {
@@ -58,7 +58,7 @@ public class PuzzleInfo {
                             inverse.setInverse(move);
                             move.setInverse(inverse);
                             return Stream.of(move, inverse);
-                        }).toList();
+                        }).collect(Collectors.toList());
                 allowedMovesList.forEach(Move::initSwaps);
                 Move[] allowedMoves = new Move[allowedMovesList.size()];
                 for (int j = 0;j<allowedMoves.length;++j) {
@@ -80,15 +80,9 @@ public class PuzzleInfo {
     }
 
     public static List<PuzzleInfo> readPuzzleInfoList(String filename) {
-        try {
-            String str = Files.readString(new File(filename).toPath(), Charset.defaultCharset());
-            return Arrays.stream(str.split("\n")).map(PuzzleInfo::getFromString)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-        } catch (IOException ie) {
-            System.out.println("Error reading puzzle info objects from file " + filename);
-            ie.printStackTrace();
-            return null;
-        }
+        String str = Puzzle.readFileString(filename);
+        return Arrays.stream(str.split("\n")).map(PuzzleInfo::getFromString)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

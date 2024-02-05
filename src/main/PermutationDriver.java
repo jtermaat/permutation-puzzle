@@ -30,23 +30,78 @@ public class PermutationDriver {
         radixTree = new PathRadixTree();
     }
 
+//    public static void main(String[] args) {
+//        PermutationDriver driver = new PermutationDriver();
+//        driver.loadPuzzleInfos("/Users/johntermaat/Downloads/puzzle_info.csv");
+//        driver.loadPuzzles("/Users/johntermaat/Downloads/puzzles.csv");
+//        driver.loadSolution("/Users/johntermaat/Downloads/submission3.csv");
+//        String puzzleType = "globe_8/25";
+//        driver.setPuzzleType(puzzleType);
+//        int searchDepth = 12;
+//        int maxLength = 100;
+//        int minLength = 3;
+//        driver.setPrintShortcuts(true);
+//        driver.collectPaths(maxLength, minLength);
+//        driver.randomSearch(searchDepth, 0, 10);
+//        System.out.println("Old solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
+//        driver.activateShortcuts();
+//        System.out.println("New solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
+//        driver.saveSolution("/Users/johntermaat/Downloads/submission4.csv");
+//    }
+
+//    public static void main(String[] args) {
+//        PermutationDriver driver = new PermutationDriver();
+//        driver.loadPuzzleInfos("/Users/johntermaat/Downloads/puzzle_info.csv");
+//        driver.loadPuzzles("/Users/johntermaat/Downloads/puzzles.csv");
+//        driver.loadSolution("/Users/johntermaat/Downloads/submission3.csv");
+//        driver.setPuzzleType("globe_3/33");
+//        runSearch(driver);
+//        driver.setPuzzleType("globe_8/25");
+//        runSearch(driver);
+//        driver.saveSolution("/Users/johntermaat/Downloads/done.csv");
+//    }
+
+//    public static void runSearch(PermutationDriver driver) {
+//        int searchDepth = 12;
+//        int maxLength = 100;
+//        int minLength = 3;
+//        int minutes = 1;
+//        driver.setPrintShortcuts(true);
+//        driver.collectPaths(maxLength, minLength);
+//        driver.randomSearch(searchDepth, 0, minutes);
+//        System.out.println("Old solution length for " + driver.getPuzzleType() + ": " + driver.getSolution().moveCountForType(driver.getPuzzleType()));
+//        driver.activateShortcuts();
+//        System.out.println("New solution length for " + driver.getPuzzleType() + ": " + driver.getSolution().moveCountForType(driver.getPuzzleType()));
+//    }
+
     public static void main(String[] args) {
         PermutationDriver driver = new PermutationDriver();
-        driver.loadPuzzleInfos("/Users/johntermaat/Downloads/puzzle_info.csv");
-        driver.loadPuzzles("/Users/johntermaat/Downloads/puzzles.csv");
-        driver.loadSolution("/Users/johntermaat/Downloads/submission3.csv");
-        String puzzleType = "globe_3/33";
-        driver.setPuzzleType(puzzleType);
+        driver.loadPuzzleInfos("/kaggle/input/santa-2023/puzzle_info.csv");
+        driver.loadPuzzles("/kaggle/input/santa-2023/puzzles.csv");
+        driver.loadSolution(args[0]);
+        driver.setPuzzleType("globe_3/33");
+        runSearch(driver);
+        driver.setPuzzleType("globe_8/25");
+        runSearch(driver);
+        driver.saveSolution("/kaggle/working/submission.csv");
+    }
+
+    public static void runSearch(PermutationDriver driver) {
         int searchDepth = 12;
         int maxLength = 100;
         int minLength = 3;
+        int minutes = 10;
+        driver.resetRadixTree();
         driver.setPrintShortcuts(true);
         driver.collectPaths(maxLength, minLength);
-        driver.randomSearch(searchDepth, 0, 1);
-        System.out.println("Old solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
+        driver.randomSearch(searchDepth, 0, minutes);
+        System.out.println("Old solution length for " + driver.getPuzzleType() + ": " + driver.getSolution().moveCountForType(driver.getPuzzleType()));
         driver.activateShortcuts();
-        System.out.println("New solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
-        driver.saveSolution("/Users/johntermaat/Downloads/submission4.csv");
+        System.out.println("New solution length for " + driver.getPuzzleType() + ": " + driver.getSolution().moveCountForType(driver.getPuzzleType()));
+    }
+
+    public void resetRadixTree() {
+        this.radixTree = new PathRadixTree();
     }
 
     public void collectPaths(int maxLength, int minLength) {

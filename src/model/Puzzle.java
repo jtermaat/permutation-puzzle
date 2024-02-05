@@ -8,9 +8,14 @@ import paths.Path;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Data
 @Builder
@@ -61,17 +66,28 @@ public class Puzzle {
     }
 
     public static List<Puzzle> readPuzzleList(String filename) {
+        String str = readFileString(new File(filename).toPath().toString());
+        List<Puzzle> puzzleList = Arrays.stream(str.split("\n")).map(Puzzle::getFromString)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return puzzleList;
+    }
+
+    public static String readFileString(String filename) {
         try {
-            String str = Files.readString(new File(filename).toPath(), Charset.defaultCharset());
-            List<Puzzle> puzzleList = Arrays.stream(str.split("\n")).map(Puzzle::getFromString)
-                    .filter(Objects::nonNull)
-                    .toList();
-            return puzzleList;
-        } catch (IOException ie) {
-            System.out.println("Error reading puzzle objects from file " + filename);
-            ie.printStackTrace();
-            return null;
+            return new String(Files.readAllBytes(Paths.get(filename)));
+        } catch (IOException e) {
+            System.err.println("Error reading file " + filename);
+            e.printStackTrace();
+            return "";
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Stream<T> reverse(Stream<T> input) {
+        Object[] temp = input.toArray();
+        return (Stream<T>) IntStream.range(0, temp.length)
+                .mapToObj(i -> temp[temp.length - i - 1]);
     }
 
 

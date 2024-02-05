@@ -9,10 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,27 +22,22 @@ public class Solution {
         puzzleTypeToMovesMap = new HashMap<>();
         Map<Integer, Puzzle> puzzleMap = puzzleList.stream()
                 .collect(Collectors.toMap(Puzzle::getId, Function.identity()));
-        try {
-            String solutionStr = Files.readString(new File(solutionFile).toPath(), Charset.defaultCharset());
-            String[] solutionParts = solutionStr.split("\n");
-            for (String solutionPart : solutionParts) {
-                try {
-                    String[] solutionSubParts = solutionPart.split(",");
-                    int thisId = Integer.parseInt(solutionSubParts[0]);
-                    PuzzleInfo puzzleInfo = puzzleInfoMap.get(puzzleMap.get(thisId).getPuzzleType());
-                    List<Move> moves = getMovesFromString(solutionSubParts[1], puzzleInfo);
-                    MoveNode solutionNode = new MoveNode(moves);
-                    idToMovesMap.put(thisId, solutionNode);
-                    puzzleTypeToMovesMap.putIfAbsent(puzzleInfo.getPuzzleType(), new ArrayList<>());
-                    puzzleTypeToMovesMap.get(puzzleInfo.getPuzzleType()).add(solutionNode);
-                    puzzleMap.get(thisId).setSolution(solutionNode);
-                } catch (NumberFormatException e) {
-                    System.out.println("Skipping line " + solutionPart);
-                }
+        String solutionStr = Puzzle.readFileString(solutionFile);
+        String[] solutionParts = solutionStr.split("\n");
+        for (String solutionPart : solutionParts) {
+            try {
+                String[] solutionSubParts = solutionPart.split(",");
+                int thisId = Integer.parseInt(solutionSubParts[0]);
+                PuzzleInfo puzzleInfo = puzzleInfoMap.get(puzzleMap.get(thisId).getPuzzleType());
+                List<Move> moves = getMovesFromString(solutionSubParts[1], puzzleInfo);
+                MoveNode solutionNode = new MoveNode(moves);
+                idToMovesMap.put(thisId, solutionNode);
+                puzzleTypeToMovesMap.putIfAbsent(puzzleInfo.getPuzzleType(), new ArrayList<>());
+                puzzleTypeToMovesMap.get(puzzleInfo.getPuzzleType()).add(solutionNode);
+                puzzleMap.get(thisId).setSolution(solutionNode);
+            } catch (NumberFormatException e) {
+                System.out.println("Skipping line " + solutionPart);
             }
-        } catch (IOException ie) {
-            System.err.println("Error reading solution file " + solutionFile);
-            ie.printStackTrace();
         }
     }
 
@@ -91,7 +83,7 @@ public class Solution {
     private static List<Move> getMovesFromString(String str, PuzzleInfo puzzleInfo) {
         try {
             List<Move> moves = new ArrayList<>();
-            Map<String, Move> moveMap = List.of(puzzleInfo.getAllowedMoves()).stream()
+            Map<String, Move> moveMap = Arrays.stream(puzzleInfo.getAllowedMoves())
                     .collect(Collectors.toMap(Move::getName, Function.identity()));
             String[] parts = str.split("\\.");
             for (int i = 0; i < parts.length; ++i) {

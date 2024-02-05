@@ -3,6 +3,7 @@ package abstraction;
 import lombok.Builder;
 import lombok.Data;
 import model.Move;
+import model.Puzzle;
 import paths.Shortcut;
 import traversal.Mutator;
 
@@ -32,9 +33,9 @@ public class Cycle implements Comparable<Cycle> {
 
     public Cycle(Shortcut shortcut) {
         List<Move> originalMoves = shortcut.getStart().toList(shortcut.getEnd());
-        List<Move> completionMoves = shortcut.getShortcutMoves().reversed().stream()
+        List<Move> completionMoves = Puzzle.reverse(shortcut.getShortcutMoves().stream())
                 .map(Move::getInverse)
-                .toList();
+                .collect(Collectors.toList());
         moves = new ArrayList<>(originalMoves.size() + completionMoves.size());
         moves.addAll(originalMoves);
         moves.addAll(completionMoves);
@@ -56,7 +57,7 @@ public class Cycle implements Comparable<Cycle> {
             }
             stillSplittingSet = newStillSplittingSet;
         }
-        return doneSet.stream().toList();
+        return doneSet.stream().collect(Collectors.toList());
     }
 
     private List<Cycle> splitIntoSubCycles() {
@@ -96,7 +97,7 @@ public class Cycle implements Comparable<Cycle> {
         return Cycle.builder()
                 .moves(moves.stream()
                         .map(Move::getInverse)
-                        .toList())
+                        .collect(Collectors.toList()))
                 .build();
     }
 
@@ -221,14 +222,14 @@ public class Cycle implements Comparable<Cycle> {
         for (Cycle cycle : input) {
             cycleSet.addAll(cycle.splitIntoAllSubCycles());
         }
-        return cycleSet.stream().toList();
+        return new ArrayList<>(cycleSet);
     }
 
     public static boolean validateEquality(List<Move> list1, List<Move> list2) {
         if (list1.isEmpty() && list2.isEmpty()) {
             return true;
         }
-        int length = list1.isEmpty() ? list2.getFirst().getNewPositions().length : list1.getFirst().getNewPositions().length;
+        int length = list1.isEmpty() ? list2.stream().findFirst().get().getNewPositions().length : list1.stream().findFirst().get().getNewPositions().length;
         short[] startPositions1 = new short[length];
         short[] startPositions2 = new short[length];
         for (short i = 0;i<startPositions1.length;++i) {
