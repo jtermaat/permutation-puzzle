@@ -43,7 +43,6 @@ public class RandomShortcutHunter extends ShortcutHunter {
 
     @Override
     public List<Shortcut> performSearch() {
-        System.out.println("Starting random shortcut search.");
         long endTime = System.currentTimeMillis() + timeLimit;
         return  IntStream.range(0, maxThreadCount).boxed().parallel()
                 .map(i -> this.copy())
@@ -53,7 +52,7 @@ public class RandomShortcutHunter extends ShortcutHunter {
 
     @Override
     public List<Move> getMoveList() {
-        return this.moveList;
+        return new ArrayList<>(this.moveList);
     }
 
     @Override

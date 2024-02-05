@@ -34,20 +34,19 @@ public class PermutationDriver {
         PermutationDriver driver = new PermutationDriver();
         driver.loadPuzzleInfos("/Users/johntermaat/Downloads/puzzle_info.csv");
         driver.loadPuzzles("/Users/johntermaat/Downloads/puzzles.csv");
-        driver.loadSolution("/Users/johntermaat/Downloads/submission1.csv");
+        driver.loadSolution("/Users/johntermaat/Downloads/submission3.csv");
         String puzzleType = "globe_3/33";
         driver.setPuzzleType(puzzleType);
-        int searchDepth = 15;
-        int maxLength = 17;
-        int minLength = 5;
+        int searchDepth = 12;
+        int maxLength = 100;
+        int minLength = 3;
         driver.setPrintShortcuts(true);
         driver.collectPaths(maxLength, minLength);
-//        driver.bruteForceSearch(searchDepth);
-        driver.randomSearch(searchDepth, 0, 60);
+        driver.randomSearch(searchDepth, 0, 1);
         System.out.println("Old solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
         driver.activateShortcuts();
         System.out.println("New solution length for " + puzzleType + ": " + driver.getSolution().moveCountForType(puzzleType));
-        driver.saveSolution("/Users/johntermaat/Downloads/submission2.csv");
+        driver.saveSolution("/Users/johntermaat/Downloads/submission4.csv");
     }
 
     public void collectPaths(int maxLength, int minLength) {

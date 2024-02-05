@@ -85,7 +85,7 @@ public class Solution {
     }
 
     public void optimizeRoutes() {
-        idToMovesMap.keySet().stream().forEach(k -> idToMovesMap.get(k).optimizeRoute());
+        idToMovesMap.keySet().forEach(k -> idToMovesMap.get(k).optimizeRoute());
     }
 
     private static List<Move> getMovesFromString(String str, PuzzleInfo puzzleInfo) {
